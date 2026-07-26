@@ -15,6 +15,12 @@ public class LoaderService {
     public void loadCsv(MultipartFile file) {
         log.info("loadCsv - START: file: {}", file.getOriginalFilename());
 
+        try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} // Simulate a long-running process
         log.info("loadCsv - END");
     }
 
