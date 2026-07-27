@@ -8,6 +8,8 @@
 
 !/db/
 /db/*
+
 !/db/*.sql
 
 !.gitignore
+!/README.md
