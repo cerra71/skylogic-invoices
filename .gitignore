@@ -5,6 +5,9 @@
 !/src/
 !/start.bat
 !/pom.xml
-!/*.sql
+
+!/db/
+/db/*
+!/db/*.sql
 
 !.gitignore
