@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.skylogic.invoice.check.CheckI;
 import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
+import com.skylogic.invoice.dto.InvoiceStDTO;
 import com.skylogic.invoice.service.CheckService;
+import com.skylogic.invoice.service.GuiService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +23,9 @@ public class CheckController extends GenericController {
 	
 	@Autowired
 	private CheckService checkService;
+	
+	@Autowired
+	private GuiService guiService;
 
 	@Autowired
 	private List<CheckI> checks;
@@ -34,8 +39,34 @@ public class CheckController extends GenericController {
 	public String checkRow(@RequestParam(name = "loadingId", required = true) String loadingId,
 			               @RequestParam(name = "rowNumber", required = true) Integer rowNumber,
 		                   Model model) {
-    	List<InvoiceCheckResultDTO> result = checkService.checkRow(loadingId, rowNumber, checks);
+    	
+    	// Caricamento Row da DB
+        //InvoiceStDTO row = guiService.loadRow(loadingId, rowNumber);
+        InvoiceStDTO row = new InvoiceStDTO();
+        row.setField1("valore Filed1 di test");
+        row.setField2("valore Filed2 di test");
+        row.setInvoiceNumber("invoiceNumber di test");        
+        
+    	List<InvoiceCheckResultDTO> checkResult = checkService.checkRow(loadingId, rowNumber, row, checks);
+    	List<InvoiceCheckResultDTO> result = toResults(row);
+
+    	// Sostituisce, per fieldName (case-insensitive), il bean base con quello con l'esito del check
+    	for (int i = 0; i < result.size(); i++) {
+    		InvoiceCheckResultDTO field = result.get(i);
+    		for (InvoiceCheckResultDTO checked : checkResult) {
+    			if (checked.getFieldName().equalsIgnoreCase(field.getFieldName())) {
+    				result.set(i, checked);
+    				break;
+    			}
+    		}
+    	}
+
     	result.sort(Comparator.comparingInt(this::fieldEnumOrder));
+    	
+    	for(InvoiceCheckResultDTO field : result) {
+			log.info("checkRow - fieldName: {}, fieldValue: {}, checkFailed: {}", 
+					field.getFieldName(), field.getFieldValue(), field.getCheckFailed());
+		}
     	
     	model.addAttribute("loadingId", loadingId);
         model.addAttribute("rowNumber", rowNumber); 

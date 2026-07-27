@@ -1,5 +1,6 @@
 package com.skylogic.invoice.check;
 
+import com.skylogic.invoice.dto.CheckCategoryEnum;
 import com.skylogic.invoice.dto.FieldEnum;
 import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
 import com.skylogic.invoice.dto.InvoiceStDTO;
@@ -16,6 +17,8 @@ public interface CheckI {
 	public Integer getOrder();
 	
 	public FieldEnum getField();
+	
+	public CheckCategoryEnum getCategory();
 	
 	public boolean isPassed();
 }

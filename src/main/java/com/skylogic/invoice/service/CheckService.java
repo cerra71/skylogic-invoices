@@ -34,14 +34,10 @@ public class CheckService {
      */
     public List<InvoiceCheckResultDTO> checkRow(@NotBlank String loadingId, 
     		                                    @NotNull Integer rowNumber,
+    		                                    InvoiceStDTO row,
     		                                    List<CheckI> checks) {
         log.info("checkRow - START - loadingId: {}, rowNumber: {}", loadingId, rowNumber);
 
-        // Caricamento Row da DB
-        //InvoiceStDTO row = guiService.loadRow(loadingId, rowNumber);
-        InvoiceStDTO row = new InvoiceStDTO();
-        row.setField1("valore di test");
-        
         // Ordina i check in base all'ordine definito
         checks.sort(Comparator.comparing(CheckI::getOrder));
         
@@ -68,11 +64,8 @@ public class CheckService {
         }
 
         List<InvoiceCheckResultDTO> result = new ArrayList<>(mergedResults.values());
-
-        boolean allPassed = allPassed(result);
-        log.info("checkRow - allPassed: {}", allPassed);
         
-        if(allPassed) {
+        if(allPassed(result)) {
 			log.info("checkRow - Tutti i check sono passati -> sposto il record in INVOICES");
 			guiService.moveRowToInvoice(loadingId, rowNumber, row);
 		} else {

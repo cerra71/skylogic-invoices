@@ -88,26 +88,7 @@ public class GuiController extends GenericController {
         return "details"; // templates/details.html
     }
 
-    /**
-     * Trasforma i campi dell'{@link InvoiceStDTO} in una lista di {@link InvoiceCheckResultDTO},
-     * una riga per ciascuna proprietà, con il risultato del check ancora non valorizzato.
-     */
-    private List<InvoiceCheckResultDTO> toResults(InvoiceStDTO row) {
-        List<InvoiceCheckResultDTO> results = new ArrayList<>();
-        try {
-            PropertyDescriptor[] properties = Introspector.getBeanInfo(InvoiceStDTO.class, Object.class).getPropertyDescriptors();
-            for (PropertyDescriptor property : properties) {
-                Object value = property.getReadMethod().invoke(row);
-                InvoiceCheckResultDTO result = new InvoiceCheckResultDTO();
-                result.setFieldName(property.getName());
-                result.setFieldValue(value != null ? value.toString() : null);
-                results.add(result);
-            }
-        } catch (Exception e) {
-            log.error("toResults - Errore durante la trasformazione di InvoiceStDTO", e);
-        }
-        return results;
-    }
+    
 
     
 

@@ -10,9 +10,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InvoiceCheckResultDTO {
-
-    private String fieldName;
-
+	
+	private String fieldName;
+	
     private String fieldValue;
     
     private Boolean passed;

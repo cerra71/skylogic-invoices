@@ -1,5 +1,6 @@
 package com.skylogic.invoice.check;
 
+import com.skylogic.invoice.dto.CheckCategoryEnum;
 import com.skylogic.invoice.dto.FieldEnum;
 import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
 import com.skylogic.invoice.dto.InvoiceStDTO;
@@ -14,9 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class GenericCheck {
 	
 	protected String name ="Undefined";
-	protected String description = "Undefined";	
-	protected Integer order = 0;
+	protected String description = "Undefined";		
 	protected FieldEnum field;
+	protected CheckCategoryEnum category;
+	
+	protected Integer order = 0;
 	
 	protected boolean passed = false;
 	

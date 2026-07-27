@@ -12,5 +12,7 @@ import lombok.Setter;
 public class InvoiceStDTO {
 	
 	private String field1;
+	private String field2;
+	private String invoiceNumber;
 
 }
