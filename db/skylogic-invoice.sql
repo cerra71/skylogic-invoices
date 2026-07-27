@@ -1,1 +1,1 @@
-// script db
+// Creation script DB
