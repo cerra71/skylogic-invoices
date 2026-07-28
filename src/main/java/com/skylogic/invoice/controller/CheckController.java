@@ -43,8 +43,8 @@ public class CheckController extends GenericController {
     	// Caricamento Row da DB
         //InvoiceStDTO row = guiService.loadRow(loadingId, rowNumber);
         InvoiceStDTO row = new InvoiceStDTO();
-        row.setField1("valore Filed1 di test");
-        row.setField2("valore Filed2 di test");
+        row.setInvoiceNumber("valore Filed1 di test");
+        row.setInvoiceDate("valore Filed2 di test");
         row.setInvoiceNumber("invoiceNumber di test");        
         
     	List<InvoiceCheckResultDTO> checkResult = checkService.checkRow(loadingId, rowNumber, row, checks);

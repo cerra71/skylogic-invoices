@@ -2,10 +2,36 @@ package com.skylogic.invoice.dto;
 
 
 public enum FieldEnum {
-    Field1("Field1"),
-    Field2("Field2"),
-    Field3("Field3"),
-    invoiceNumber("invoiceNumber");
+    invoiceNumber("invoiceNumber"),
+    invoiceDate("invoiceDate"),
+    billingAccountNumber("billingAccountNumber"),
+    endCustomerId("endCustomerId"),
+    endCustomerName("endCustomerName"),
+    siteConnectivityId("siteConnectivityId"),
+    siteName("siteName"),
+    orderNumber("orderNumber"),
+    poReference("poReference"),
+    networkSliceId("networkSliceId"),
+    serviceId("serviceId"),
+    imsi("imsi"),
+    additionalImsi("additionalImsi"),
+    apn("apn"),
+    productIdentifier("productIdentifier"),
+    productOfferingId("productOfferingId"),
+    name("name"),
+    type("type"),
+    rate("rate"),
+    startDate("startDate"),
+    endDate("endDate"),
+    entitlementGb("entitlementGb"),
+    sharedPoolId("sharedPoolId"),
+    usageGb("usageGb"),
+    date("date"),
+    currency("currency"),
+    amount("amount"),
+    loadingId("loadingId"),
+    rowNum("rowNum"),
+    loadingTime("loadingTime");
 
     private final String value;
 
