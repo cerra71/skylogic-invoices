@@ -1,5 +1,9 @@
 package com.skylogic.invoice.service;
 
+import com.skylogic.invoice.repository.InvoiceDiscardRepository;
+import com.skylogic.invoice.repository.InvoiceRepository;
+import com.skylogic.invoice.repository.InvoiceStRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,6 +14,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Validated
 public class LoaderService {
+
+    // Repository autowired
+
+    @Autowired
+    private InvoiceStRepository invoiceStRepository;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
+
+    @Autowired
+    private InvoiceDiscardRepository invoiceDiscardRepository;
+
+    // //
+
 
     // Da implementare: carica il file CSV nel DB in staging
     public void loadCsv(MultipartFile file) {

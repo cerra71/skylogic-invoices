@@ -1,6 +1,5 @@
 package com.skylogic.invoice.dto;
 
-
 public enum CheckCategoryEnum {
 
 	valueCheck("valueCheck"),

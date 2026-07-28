@@ -6,6 +6,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.skylogic.invoice.repository.InvoiceDiscardRepository;
+import com.skylogic.invoice.repository.InvoiceRepository;
+import com.skylogic.invoice.repository.InvoiceStRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +25,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Validated
 public class CheckService {
+
+    // Repository autowired
+
+    @Autowired
+    private InvoiceStRepository invoiceStRepository;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
+
+    @Autowired
+    private InvoiceDiscardRepository invoiceDiscardRepository;
+
+    // //
+
+    // Service autowired
 	
 	@Autowired
 	private GuiService guiService;

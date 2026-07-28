@@ -11,7 +11,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, unmappedSourcePolicy = ReportingPolicy.IGNORE
-)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public abstract class InvoiceStToInvoiceMapper extends AbstractMapper<InvoiceStDTO, InvoiceDTO> {
 }
