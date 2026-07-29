@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.skylogic.invoice.dto.FieldEnum;
 import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
 import com.skylogic.invoice.dto.InvoiceStDTO;
+import com.skylogic.invoice.dto.LoadingSummaryDTO;
 import com.skylogic.invoice.service.GuiService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +37,12 @@ public class GuiController extends GenericController {
      * @return il nome della view {@code home}
      */
     @GetMapping("/home")
-    public String home(@AuthenticationPrincipal UserDetails userDetails, 
-    		           Model model) {
+    public String home(@AuthenticationPrincipal UserDetails userDetails,
+                       Model model) {
         log.info("home - START: Utente autenticato: {}", userDetails.getUsername());
-                
-        //model.addAttribute("tickets", filteredTickets.getContent());
+
+        List<LoadingSummaryDTO> loadings = guiService.getLoadings();
+        model.addAttribute("loadings", loadings);
 
         return "home"; // templates/home.html
     }

@@ -15,4 +15,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface InvoiceDiscardRepository extends JpaRepository<InvoiceDiscard, InvoiceRowId> {
+
+    long countByLoadingId(String loadingId);
 }

@@ -85,25 +85,17 @@
                         </tr>
                         </thead>
                         <tbody>
-	                        <tr th:each="loading : ${loadings}">
-	                            <td><a th:href="@{/details(loadingId=${loading.id})}" th:text="${loading.id}"></a></td>
-	                            <td th:text="${loading.year}"></td>
-	                            <td th:text="${loading.month}"></td>
-	                            <td th:text="${loading.loadingtime}"></td>
-	                            <td th:text="${loading.loadedRows}"></td>
-	                            <td th:text="${loading.discardedRows}"></td>
-	                        </tr>
-	                        <tr>
-	                            <td><a th:href="@{/details(loadingId='f81d4fae-7dec-11d0-a765-00a0c91e6bf6')}">f81d4fae-7dec-11d0-a765-00a0c91e6bf6</a></td>
-	                            <td>2026</td>
-	                            <td>June</td>
-	                            <td>11/07/2026 12:25:37</td>
-	                            <td>321.145</td>
-	                            <td>12</td>
-	                        </tr>
-	                        <tr th:if="${loadings == null or #lists.isEmpty(loadings)}">
-	                            <td colspan="4" class="text-center text-muted">No loading available</td>
-	                        </tr>
+                            <tr th:each="loading : ${loadings}">
+                                <td><a th:href="@{/details(loadingId=${loading.loadingId})}" th:text="${loading.loadingId}"></a></td>
+                                <td th:text="${loading.reportingYear}"></td>
+                                <td th:text="${loading.reportingMonth}"></td>
+                                <td th:text="${loading.loadingTime}"></td>
+                                <td th:text="${loading.loadedRows}"></td>
+                                <td th:text="${loading.discardedRows}"></td>
+                            </tr>
+                            <tr th:if="${loadings == null or #lists.isEmpty(loadings)}">
+                                <td colspan="6" class="text-center text-muted">No loading available</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

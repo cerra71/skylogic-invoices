@@ -1,5 +1,6 @@
 package com.skylogic.invoice.service;
 
+import com.skylogic.invoice.dto.LoadingSummaryDTO;
 import com.skylogic.invoice.repository.InvoiceDiscardRepository;
 import com.skylogic.invoice.repository.InvoiceRepository;
 import com.skylogic.invoice.repository.InvoiceStRepository;
@@ -12,6 +13,13 @@ import com.skylogic.invoice.dto.InvoiceStDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @Service
 @Slf4j
@@ -31,12 +39,42 @@ public class GuiService {
 
 	// //
 	
+	/**
+	 * Restituisce la lista dei caricamenti, aggregando invoice_st (per loading_id,
+	 * loading_time e conteggio righe) e invoice_discard (per conteggio righe scartate).
+	 * Ordinati per loading_time descrescente.
+	 */
+	public List<LoadingSummaryDTO> getLoadings() {
+		List<Object[]> rows = invoiceStRepository.findLoadingSummaries();
+		List<LoadingSummaryDTO> result = new ArrayList<>();
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+		for (Object[] row : rows) {
+			String loadingId = (String) row[0];
+			LocalDateTime loadingTime = (LocalDateTime) row[1];
+			Long loadedRows = (Long) row[2];
+			long discardedRows = invoiceDiscardRepository.countByLoadingId(loadingId);
+
+			LoadingSummaryDTO dto = new LoadingSummaryDTO();
+			dto.setLoadingId(loadingId);
+			dto.setReportingYear(loadingTime.getYear());
+			dto.setReportingMonth(loadingTime.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
+			dto.setLoadingTime(loadingTime.format(formatter));
+			dto.setLoadedRows(loadedRows);
+			dto.setDiscardedRows(discardedRows);
+
+			result.add(dto);
+		}
+
+		return result;
+	}
+
 	// Da implementare: carica la riga dal DB in base a loadingId e rowNumber
-	public InvoiceStDTO loadRow(@NotBlank String loadingId, 
+	public InvoiceStDTO loadRow(@NotBlank String loadingId,
                                 @NotNull Integer rowNumber) {
-		InvoiceStDTO invoiceStDTO = new InvoiceStDTO();
-		invoiceStDTO.setField1("");
-		return invoiceStDTO;
+		// TODO: implementare il recupero della riga da invoice_st
+		return new InvoiceStDTO();
 	}
 	
 	// Da implementare: salva la riga nel DB in invoice e la toglie da staging
