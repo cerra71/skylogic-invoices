@@ -20,10 +20,11 @@ import java.util.List;
 public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRowId> {
 
     /**
-     * Returns one row per loading_id with its loading_time and total row count,
-     * ordered by loading_time descending.
-     * Result columns: [0] loadingId (String), [1] loadingTime (LocalDateTime), [2] count (Long)
+     * Restituisce una riga per ogni loading_id con loading_time e conteggio righe,
+     * ordinati per loading_time discendente.
+     * Colonne risultato: [0] loading_id (String), [1] loading_time (Timestamp), [2] count (Long)
      */
-    @Query("SELECT i.loadingId, i.loadingTime, COUNT(i) FROM InvoiceSt i GROUP BY i.loadingId, i.loadingTime ORDER BY i.loadingTime DESC")
+    @Query(value = "SELECT loading_id, loading_time, COUNT(*) FROM public.invoice_st GROUP BY loading_id, loading_time ORDER BY loading_time DESC",
+           nativeQuery = true)
     List<Object[]> findLoadingSummaries();
 }

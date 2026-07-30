@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -52,8 +53,10 @@ public class GuiService {
 
 		for (Object[] row : rows) {
 			String loadingId = (String) row[0];
-			LocalDateTime loadingTime = (LocalDateTime) row[1];
-			Long loadedRows = (Long) row[2];
+			// Con query nativa PostgreSQL restituisce Timestamp; convertiamo a LocalDateTime
+			LocalDateTime loadingTime = ((Timestamp) row[1]).toLocalDateTime();
+			// COUNT(*) può essere restituito come Long o BigInteger a seconda del driver
+			Long loadedRows = ((Number) row[2]).longValue();
 			long discardedRows = invoiceDiscardRepository.countByLoadingId(loadingId);
 
 			LoadingSummaryDTO dto = new LoadingSummaryDTO();

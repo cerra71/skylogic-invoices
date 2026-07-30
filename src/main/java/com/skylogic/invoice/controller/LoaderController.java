@@ -29,7 +29,7 @@ public class LoaderController extends GenericController {
         loaderService.loadCsv(file);
 
         log.info("loadCsv - END");
-        return "home";
+        return "redirect:/home";
     }
 
 }
