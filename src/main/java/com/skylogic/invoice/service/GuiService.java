@@ -76,7 +76,6 @@ public class GuiService {
 	// Da implementare: carica la riga dal DB in base a loadingId e rowNumber
 	public InvoiceStDTO loadRow(@NotBlank String loadingId,
                                 @NotNull Integer rowNumber) {
-		// TODO: implementare il recupero della riga da invoice_st
 		return new InvoiceStDTO();
 	}
 	
