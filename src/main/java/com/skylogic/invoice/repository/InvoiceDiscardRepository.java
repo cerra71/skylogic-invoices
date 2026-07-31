@@ -18,7 +18,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface InvoiceDiscardRepository extends JpaRepository<InvoiceDiscard, InvoiceRowId> {
 
-    @Query(value = "SELECT COUNT(*) FROM public.invoice_discard WHERE loading_id = :loadingId",
-           nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM public.invoice_discard WHERE loading_id = :loadingId", nativeQuery = true)
     long countByLoadingId(@Param("loadingId") String loadingId);
 }

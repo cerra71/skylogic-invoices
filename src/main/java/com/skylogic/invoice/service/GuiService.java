@@ -1,5 +1,6 @@
 package com.skylogic.invoice.service;
 
+import com.skylogic.invoice.dto.InvoiceDTO;
 import com.skylogic.invoice.dto.LoadingSummaryDTO;
 import com.skylogic.invoice.repository.InvoiceDiscardRepository;
 import com.skylogic.invoice.repository.InvoiceRepository;
@@ -138,12 +139,15 @@ public class GuiService {
 		return result;
 	}
 
-	// Da implementare: carica la riga dal DB in base a loadingId e rowNumber
-	public InvoiceStDTO loadRow(@NotBlank String loadingId,
-                                @NotNull Integer rowNumber) {
+	// Carica la riga dal DB in base a loadingId e rowNumber (sia da tabella invoice_st che da tabella invoice, overload)
+	public InvoiceStDTO loadInvoiceStRow(@NotBlank String loadingId, @NotNull Integer rowNumber) {
 		return new InvoiceStDTO();
 	}
-	
+
+	public InvoiceDTO loadInvoiceRow(@NotBlank String loadingId, @NotNull Integer rowNumber) {
+		return new InvoiceDTO();
+	}
+
 	// Da implementare: salva la riga nel DB in invoice e la toglie da staging
 	public void moveRowToInvoice(@NotBlank String loadingId, 
 						         @NotNull Integer rowNumber,
