@@ -106,13 +106,8 @@ public class LoaderService {
              CSVReader csvReader = new CSVReaderBuilder(bufferedReader).build()) {
 
             // Salta l'intestazione solo se il flag è attivo
-            if (csvHasHeader) {
-                String[] headers = csvReader.readNext();
-                if (headers == null) {
-                    log.warn("loadCsv - File vuoto o senza intestazione: {}", file.getOriginalFilename());
-                    return;
-                }
-            }
+            if (csvHasHeader)
+                csvReader.readNext();     
 
             String[] row;
             long rowNum = 1;

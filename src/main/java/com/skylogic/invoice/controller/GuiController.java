@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.skylogic.invoice.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
+import com.skylogic.invoice.dto.InvoiceDTO;
+import com.skylogic.invoice.dto.InvoiceStDTO;
+import com.skylogic.invoice.dto.LoadingSummaryDTO;
+import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
 import com.skylogic.invoice.service.GuiService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +29,9 @@ public class GuiController extends GenericController {
 
     @Autowired
     private GuiService guiService;
+    
+    @Autowired
+    private InvoiceStToInvoiceMapper invoiceStToInvoiceMapper;
 
     /**
      * Mostra la pagina home
@@ -76,82 +83,57 @@ public class GuiController extends GenericController {
 
         log.info("loadRow - START: loadingId: {}, rowNumber: {}", loadingId, rowNumber);
 
-        // Rimandiamo alla pagina i parametri della ricerca per renderli visibili nei campi del form
-        model.addAttribute("loadingId", loadingId);
-        model.addAttribute("rowNumber", rowNumber);
-
-        /*
-         * Questa sarà la lista comune utilizzata da details.html.
-         *
-         * Il record può arrivare da invoice_st o da invoice: entrambi devono diventare una lista
-         * di InvoiceCheckResultDTO.
-         */
-        List<InvoiceCheckResultDTO> fields;
+        InvoiceStDTO row = new InvoiceStDTO(); // Inizializziamo row a un oggetto vuoto per evitare null pointer exception
+        List<InvoiceCheckResultDTO> fields = Collections.emptyList();
 
         // Prima ricerca: cerchiamo il record nella tabella invoice_st.
         InvoiceStDTO invoiceStRow = guiService.loadInvoiceStRow(loadingId, rowNumber);
+        log.debug("loadRow - invoiceStRow: {}", invoiceStRow);
 
         // Se il record viene trovato in invoice_st
         if (invoiceStRow != null) {
-
-            // Il risultato è passato a toResults()
-            fields = toResults(invoiceStRow);
-
-            /*
-             * Il record non è ancora stato controllato.
-             * Il pulsante Run Check deve essere abilitato.
-             */
+        	row = invoiceStRow;
             model.addAttribute("checkEnabled", true);
-
         } else {
-
-            /*
-             * Il record non è stato trovato in invoice_st.
-             * Seconda ricerca: cerchiamo il record nella tabella invoice.
-             */
             InvoiceDTO invoiceRow = guiService.loadInvoiceRow(loadingId, rowNumber);
-
+            log.debug("loadRow - invoiceRow: {}", invoiceRow);
 
             // Il record non esiste in nessuna delle due tabelle.
             if (invoiceRow == null) {
-
-                model.addAttribute("fields", Collections.emptyList());
+                //model.addAttribute("fields", Collections.emptyList());
                 model.addAttribute("checkEnabled", false);
                 model.addAttribute("errorMessage", "Nessun record trovato per Loading ID " + loadingId + " e Row Number " + rowNumber);
 
                 log.warn("Record not found: loadingId: {}, rowNumber: {}", loadingId, rowNumber);
-
-                return "details"; // templates/details.html
-
             // Il record viene trovato nella tabella invoice (= ha già superato i check)
             } else {
-
-                // Il risultato è passato a toResults()
-                fields = toResults(invoiceRow);
-
+            	row = invoiceStToInvoiceMapper.toEntity(invoiceRow);
                 // Il record è già stato controllato, quindi il pulsante Run Check è disabilitato.
                 model.addAttribute("checkEnabled", false);
             }
-
-            /*
-             * A questo punto fields è costruito:
-             *
-             * - da InvoiceStDTO, se il record era in invoice_st;
-             * - da InvoiceDTO, se il record era in invoice.
-             *
-             * In entrambi i casi il risultato finale è lo stesso tipo: List<InvoiceCheckResultDTO>.
-             *
-             */
-            fields.sort(Comparator.comparingInt(this::fieldEnumOrder));
-
-            // Aggiorna i valori
-            model.addAttribute("loadingId", loadingId);
-            model.addAttribute("rowNumber", rowNumber);
-            model.addAttribute("fields", fields);
-
-            log.info("loadRow - END");
-
         }
+        
+        // Il risultato è passato a toResults()
+        fields = toResults(row);
+        log.debug("loadRow - fields: {}", fields);
+        
+        /*
+         * A questo punto fields è costruito:
+         *
+         * - da InvoiceStDTO, se il record era in invoice_st;
+         * - da InvoiceDTO, se il record era in invoice.
+         *
+         * In entrambi i casi il risultato finale è lo stesso tipo: List<InvoiceCheckResultDTO>.
+         *
+         */
+        fields.sort(Comparator.comparingInt(this::fieldEnumOrder));
+
+        // Aggiorna i valori
+        model.addAttribute("loadingId", loadingId);
+        model.addAttribute("rowNumber", rowNumber);
+        model.addAttribute("fields", fields);
+
+        log.info("loadRow - END");
 
         return "details";   // templates/details.html
     }

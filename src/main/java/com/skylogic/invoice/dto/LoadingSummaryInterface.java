@@ -15,12 +15,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoadingSummaryDTO {
+public class LoadingSummaryInterface {
 
-    private String loadingId;
-    private String reportingYear;
-    private String reportingMonth;
-    private Timestamp loadingTime;
-    private Long loadedRows;
-    private Long discardedRows;
+    public String loadingId = null;
+    public String reportingYear = null;
+    public String reportingMonth = null;
+    public Timestamp loadingTime = null;
+    public Long loadedRows = null;
+	
 }

@@ -41,11 +41,12 @@ public class CheckController extends GenericController {
 		                   Model model) {
     	
     	// Caricamento Row da DB
-        //InvoiceStDTO row = guiService.loadRow(loadingId, rowNumber);
+        //InvoiceStDTO row = guiService.loadInvoiceStRow(loadingId, rowNumber);
         InvoiceStDTO row = new InvoiceStDTO();
         row.setInvoiceNumber("valore Filed1 di test");
         row.setInvoiceDate("valore Filed2 di test");
-        row.setInvoiceNumber("invoiceNumber di test");        
+        row.setInvoiceNumber("invoiceNumber di test");    
+        row.setBillingAccountNumber("billingAccountNumber di test");
         
     	List<InvoiceCheckResultDTO> checkResult = checkService.checkRow(loadingId, rowNumber, row, checks);
     	List<InvoiceCheckResultDTO> result = toResults(row);
