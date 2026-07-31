@@ -24,7 +24,7 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
      * ordinati per loading_time discendente.
      * Colonne risultato: [0] loading_id (String), [1] loading_time (Timestamp), [2] count (Long)
      */
-    @Query(value = "SELECT loading_id, loading_time, COUNT(*) FROM public.invoice_st GROUP BY loading_id, loading_time ORDER BY loading_time DESC",
+    @Query(value = "SELECT loading_id, MAX(loading_time), COUNT(*) FROM public.invoice_st GROUP BY loading_id ORDER BY MAX(loading_time) DESC",
            nativeQuery = true)
     List<Object[]> findLoadingSummaries();
 }

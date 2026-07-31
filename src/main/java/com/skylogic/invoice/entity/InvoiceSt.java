@@ -10,13 +10,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import org.springframework.data.domain.Persistable;
 
 import java.time.LocalDateTime;
 
@@ -28,7 +32,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class InvoiceSt {
+public class InvoiceSt implements Persistable<InvoiceRowId> {
 
     @Column(name = "invoice_number", length = 4000)
     private String invoiceNumber;
@@ -122,4 +126,24 @@ public class InvoiceSt {
 
     @Column(name = "loading_time")
     private LocalDateTime loadingTime;
+
+    /**
+     * Indica a Spring Data che l'entity è sempre nuova → chiama persist() invece di merge(),
+     * evitando il SELECT prima di ogni INSERT.
+     * @Builder.Default assicura che il builder lo inizializzi a true.
+     * @PostLoad lo imposta a false per le entity caricate dal DB.
+     */
+    @Transient
+    @Builder.Default
+    private boolean isNew = true;
+
+    @Override
+    public InvoiceRowId getId() {
+        return new InvoiceRowId(loadingId, rowNum);
+    }
+
+    @PostLoad
+    void markNotNew() {
+        this.isNew = false;
+    }
 }

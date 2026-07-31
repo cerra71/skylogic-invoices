@@ -28,10 +28,11 @@ public class DummyCheck extends GenericCheck implements CheckI {
     	setCategory(CheckCategoryEnum.valueCheck);
     }
 
+
     @Override
     public InvoiceCheckResultDTO check(InvoiceStDTO row) {
     	
-    	String fieldValue = row.getField1();
+    	String fieldValue = row.getInvoiceNumber();
     	
     	try {
 	    	log.debug("Check - START - name: {}, order: {}, field: {}", getName(), getOrder(), getField().getValue());
