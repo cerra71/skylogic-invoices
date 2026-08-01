@@ -25,9 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Validated
 public class GuiService {
-
-	// Repository autowired
-
 	@Autowired
 	private InvoiceStRepository invoiceStRepository;
 
@@ -61,15 +58,18 @@ public class GuiService {
 		return result;
 	}
 
-	// Carica la riga dal DB in base a loadingId e rowNumber (sia da tabella invoice_st che da tabella invoice, overload)
+	// Carica la riga dal DB in base a loadingId e rowNumber (da tabella invoice_st)
 	public InvoiceStDTO loadInvoiceStRow(@NotBlank String loadingId, @NotNull Integer rowNumber) {
+		// Da implementare:
 		InvoiceStDTO dto = new InvoiceStDTO();
 		dto.setInvoiceNumber("st 123");
 		dto.setSiteName("st name");
 		return dto;
 	}
 	
+	// Carica la riga dal DB in base a loadingId e rowNumber (da tabella invoice)
 	public InvoiceDTO loadInvoiceRow(@NotBlank String loadingId, @NotNull Integer rowNumber) {
+		// Da implementare:
 		InvoiceDTO dto = new InvoiceDTO();
 		dto.setInvoiceNumber("123");
 		dto.setSiteName("name");
@@ -79,11 +79,18 @@ public class GuiService {
 
 	// Da implementare: salva la riga nel DB in invoice e la toglie da staging
 	public void moveRowToInvoice(@NotBlank String loadingId, 
-						         @NotNull Integer rowNumber,
-						         @NotNull InvoiceStDTO invoiceStDTO) {
-		log.info("moveRowToInvoice - START - loadingId: {}, rowNumber: {}, invoiceStDTO: {}", loadingId, rowNumber, invoiceStDTO);
-		// Da implementare: salva la riga nel DB in invoice e la toglie da staging
+						         @NotNull Integer rowNumber) {
+		log.info("moveRowToInvoice - START - loadingId: {}, rowNumber: {}", loadingId, rowNumber);
+		// Da implementare: salva la riga nel DB in invoice e la toglie da invocie_st
 		log.info("moveRowToInvoice - END");
+	}
+	
+	// Da implementare: salva la riga nel DB in invoice_st e la toglie da invoice
+	public void moveRowToStaging(@NotBlank String loadingId, 
+						         @NotNull Integer rowNumber) {
+		log.info("moveRowToStaging - START - loadingId: {}, rowNumber: {}", loadingId, rowNumber);
+		// Da implementare: salva la riga nel DB in invoice_ST e la toglie da invocie
+		log.info("moveRowToStaging - END");
 	}
 
 }

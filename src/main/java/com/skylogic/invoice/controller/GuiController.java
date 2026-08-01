@@ -39,7 +39,8 @@ public class GuiController extends GenericController {
      * @return il nome della view {@code home}
      */
     @GetMapping("/home")
-    public String home(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String home(@AuthenticationPrincipal UserDetails userDetails, 
+    		           Model model) {
 
         log.info("home - START: Utente autenticato: {}", userDetails.getUsername());
 
@@ -55,7 +56,7 @@ public class GuiController extends GenericController {
      * @return il nome della view {@code details}
      */
     @GetMapping("/details")
-    public String details(@AuthenticationPrincipal UserDetails userDetails, Model model,
+    public String details(Model model,
                           @RequestParam(name = "loadingId", required = false) String loadingId) {
 
         log.info("details - START");
@@ -67,17 +68,9 @@ public class GuiController extends GenericController {
 
         return "details"; // templates/home.html
     }
-
-    /**
-     * Carica la riga richiesta e la mostra nella pagina details, trasformando
-     * l'{@link InvoiceStDTO} e l'{@link InvoiceDTO}  in un {@link InvoiceCheckResultDTO} per ciascun campo
-     * (senza esito di check, che viene valorizzato solo da {@code /checkRow}).
-     *
-     * @return il nome della view {@code details}
-     */
+    
     @PostMapping("/loadRow")
-    public String loadRow(@AuthenticationPrincipal UserDetails userDetails,
-                          Model model,
+    public String loadRow(Model model,
                           @RequestParam("loadingId") String loadingId,
                           @RequestParam("rowNumber") Integer rowNumber) {
 
@@ -136,5 +129,26 @@ public class GuiController extends GenericController {
         log.info("loadRow - END");
 
         return "details";   // templates/details.html
+    }
+
+    /**
+     * 
+     * @param model
+     * @param loadingId
+     * @param rowNumber
+     * @return
+     */
+    @PostMapping("/moveRowToStaging")
+    public String moveRowToStaging(Model model,
+                                   @RequestParam("loadingId") String loadingId,
+                                   @RequestParam("rowNumber") Integer rowNumber) {
+
+        log.info("moveRowToStaging - START: loadingId: {}, rowNumber: {}", loadingId, rowNumber);
+
+        guiService.moveRowToStaging(loadingId, rowNumber);
+
+        log.info("moveRowToStaging - END");
+
+        return loadRow(model, loadingId, rowNumber);
     }
 }
