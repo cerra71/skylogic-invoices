@@ -20,6 +20,7 @@ import com.skylogic.invoice.repository.InvoiceStRepository;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -77,8 +78,19 @@ public class GuiService {
 	}
 
 
+	/**
+	 * Elimina tutte le righe di un loading (da invoice_st e invoice_discard).
+	 */
+	@Transactional
+	public void deleteLoading(@NotBlank String loadingId) {
+		log.info("deleteLoading - START: loadingId: {}", loadingId);
+		invoiceStRepository.deleteByLoadingId(loadingId);
+		invoiceDiscardRepository.deleteByLoadingId(loadingId);
+		log.info("deleteLoading - END: loadingId: {}", loadingId);
+	}
+
 	// Da implementare: salva la riga nel DB in invoice e la toglie da staging
-	public void moveRowToInvoice(@NotBlank String loadingId, 
+	public void moveRowToInvoice(@NotBlank String loadingId,
 						         @NotNull Integer rowNumber,
 						         @NotNull InvoiceStDTO invoiceStDTO) {
 		log.info("moveRowToInvoice - START - loadingId: {}, rowNumber: {}, invoiceStDTO: {}", loadingId, rowNumber, invoiceStDTO);

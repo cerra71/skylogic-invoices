@@ -69,6 +69,17 @@ public class GuiController extends GenericController {
     }
 
     /**
+     * Elimina tutte le righe di un loading (invoice_st + invoice_discard) e torna alla home.
+     */
+    @PostMapping("/deleteLoading")
+    public String deleteLoading(@AuthenticationPrincipal UserDetails userDetails,
+                                @RequestParam("loadingId") String loadingId) {
+        log.info("deleteLoading - START: loadingId: {}", loadingId);
+        guiService.deleteLoading(loadingId);
+        return "redirect:/home";
+    }
+
+    /**
      * Carica la riga richiesta e la mostra nella pagina details, trasformando
      * l'{@link InvoiceStDTO} e l'{@link InvoiceDTO}  in un {@link InvoiceCheckResultDTO} per ciascun campo
      * (senza esito di check, che viene valorizzato solo da {@code /checkRow}).

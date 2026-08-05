@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +35,9 @@ public class LoaderService {
 
     @Value("${invoices.csv.header:true}")
     private boolean csvHasHeader;
+
+    @Value("${invoices.csv.encoding:UTF-8}")
+    private String csvEncoding;
 
     @Autowired
     private InvoiceStRepository invoiceStRepository;
@@ -102,7 +105,7 @@ public class LoaderService {
         log.info("loadCsv - loadingId: {}", loadingId);
 
         try (BufferedReader bufferedReader = new BufferedReader(
-                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
+                new InputStreamReader(file.getInputStream(), Charset.forName(csvEncoding)));
              CSVReader csvReader = new CSVReaderBuilder(bufferedReader).build()) {
 
             // Salta l'intestazione solo se il flag è attivo
