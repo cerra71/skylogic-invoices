@@ -1,13 +1,15 @@
 package com.skylogic.invoice.service;
 
-import java.util.Collections;
+
 import java.util.List;
 
+import com.skylogic.invoice.entity.InvoiceRowId;
+import com.skylogic.invoice.mapper.InvoiceMapper;
+import com.skylogic.invoice.mapper.InvoiceStMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
 import com.skylogic.invoice.dto.InvoiceDTO;
 import com.skylogic.invoice.dto.InvoiceStDTO;
 import com.skylogic.invoice.dto.LoadingSummaryDTO;
@@ -41,12 +43,18 @@ public class GuiService {
 	@Autowired
 	private LoadingSummaryMapper loadingSummaryMapper;
 
+	@Autowired
+	private InvoiceMapper invoiceMapper;
+
+	@Autowired
+	private InvoiceStMapper invoiceStMapper;
+
 	// //
 	
 	/**
 	 * Restituisce la lista dei caricamenti, aggregando invoice_st (per loading_id,
 	 * loading_time e conteggio righe) e invoice_discard (per conteggio righe scartate).
-	 * Ordinati per loading_time descrescente.	 
+	 * Ordinati per loading_time decrescente.
 	 * @return lista di {@link LoadingSummaryDTO} con i riepiloghi dei caricamenti.
 	 */
 	public List<LoadingSummaryDTO> getLoadings() {
@@ -63,20 +71,34 @@ public class GuiService {
 	}
 
 	// Carica la riga dal DB in base a loadingId e rowNumber (sia da tabella invoice_st che da tabella invoice, overload)
+	// Usa come chiave il LoadingId del foglio caricato + il RowNumber della riga
 	public InvoiceStDTO loadInvoiceStRow(@NotBlank String loadingId, @NotNull Integer rowNumber) {
-		InvoiceStDTO dto = new InvoiceStDTO();
-		dto.setInvoiceNumber("st 123");
-		dto.setSiteName("st name");
-		return dto;
+
+		// Id da cercare nel db
+		InvoiceRowId id = new InvoiceRowId(loadingId, rowNumber.longValue());
+
+		// findById restituisce una entity Optional<Invoice>
+		// Convertiamo Optional<Invoice> in InvoiceDTO oppure
+		// Null se la riga non esiste (campi bianchi)
+		return invoiceStRepository.findById(id)
+				.map(entity -> invoiceStMapper.toDTO(entity))
+				.orElse(null);
 	}
 	
 	public InvoiceDTO loadInvoiceRow(@NotBlank String loadingId, @NotNull Integer rowNumber) {
-		InvoiceDTO dto = new InvoiceDTO();
-		dto.setInvoiceNumber("123");
-		dto.setSiteName("name");
-		return dto;
-	}
 
+		// Id da cercare nel db
+		InvoiceRowId id = new InvoiceRowId(loadingId, rowNumber.longValue());
+
+		log.info("Riga da cercare nel database: {}", id);
+
+		// findById restituisce una entity Optional<Invoice>
+		// Convertiamo Optional<Invoice> in InvoiceDTO oppure
+		// Null se la riga non esiste (campi bianchi)
+		return invoiceRepository.findById(id)
+				.map(entity -> invoiceMapper.toDTO(entity))
+				.orElse(null);
+	}
 
 	/**
 	 * Elimina tutte le righe di un loading (da invoice_st e invoice_discard).

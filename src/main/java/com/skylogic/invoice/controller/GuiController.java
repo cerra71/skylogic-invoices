@@ -4,11 +4,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
+@Validated
 @Controller
 public class GuiController extends GenericController {
 
@@ -90,7 +93,7 @@ public class GuiController extends GenericController {
     public String loadRow(@AuthenticationPrincipal UserDetails userDetails,
                           Model model,
                           @RequestParam("loadingId") String loadingId,
-                          @RequestParam("rowNumber") Integer rowNumber) {
+                          @RequestParam("rowNumber") @Min(1) Integer rowNumber) {
 
         log.info("loadRow - START: loadingId: {}, rowNumber: {}", loadingId, rowNumber);
 
@@ -111,14 +114,23 @@ public class GuiController extends GenericController {
 
             // Il record non esiste in nessuna delle due tabelle.
             if (invoiceRow == null) {
-                //model.addAttribute("fields", Collections.emptyList());
+                model.addAttribute("fields", Collections.emptyList());
                 model.addAttribute("checkEnabled", false);
                 model.addAttribute("errorMessage", "Nessun record trovato per Loading ID " + loadingId + " e Row Number " + rowNumber);
 
                 log.warn("Record not found: loadingId: {}, rowNumber: {}", loadingId, rowNumber);
-            // Il record viene trovato nella tabella invoice (= ha già superato i check)
+
+                // Aggiorna i valori
+                model.addAttribute("loadingId", loadingId);
+                model.addAttribute("rowNumber", rowNumber);
+                model.addAttribute("fields", fields);
+
+                return "details"; // templates/details.html
+
+                // Il record viene trovato nella tabella invoice (= ha già superato i check)
             } else {
             	row = invoiceStToInvoiceMapper.toEntity(invoiceRow);
+
                 // Il record è già stato controllato, quindi il pulsante Run Check è disabilitato.
                 model.addAttribute("checkEnabled", false);
             }
