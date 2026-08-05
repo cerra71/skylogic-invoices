@@ -80,7 +80,7 @@ public class CheckService {
         // Se tutti i check sono passati, sposta il record in INVOICES
         if(allPassed(result)) {
 			log.info("checkRow - Tutti i check sono passati -> sposto il record in INVOICES");
-			guiService.moveRowToInvoice(loadingId, rowNumber);
+			guiService.moveRowToInvoice(loadingId, rowNumber, row);
 		} else {
 			log.info("checkRow - Alcuni check non sono passati");
 		}
