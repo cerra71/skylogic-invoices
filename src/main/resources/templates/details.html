@@ -50,7 +50,7 @@
                 <input class="form-control" id="rowNumber" type="number" name="rowNumber" th:value="${rowNumber}">
             </div>
             <button type="submit" class="btn btn-primary">LOAD ROW</button>
-            <button type="button" class="btn btn-secondary ms-auto" disabled>PUSH BACK TO STAGING</button>
+            <button type="submit" class="btn btn-primary ms-auto" th:formaction="@{/moveRowToStaging}" disabled>PUSH BACK TO STAGING</button>
             <button type="submit" class="btn btn-primary" th:formaction="@{/checkRow}" formmethod="post">START CHECKING ROW</button>
         </form>
 

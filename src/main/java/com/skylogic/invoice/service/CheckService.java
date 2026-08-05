@@ -26,8 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 @Validated
 public class CheckService {
 
-    // Repository autowired
-
     @Autowired
     private InvoiceStRepository invoiceStRepository;
 
@@ -36,11 +34,7 @@ public class CheckService {
 
     @Autowired
     private InvoiceDiscardRepository invoiceDiscardRepository;
-
-    // //
-
-    // Service autowired
-	
+    
 	@Autowired
 	private GuiService guiService;
 
@@ -83,9 +77,10 @@ public class CheckService {
 
         List<InvoiceCheckResultDTO> result = new ArrayList<>(mergedResults.values());
         
+        // Se tutti i check sono passati, sposta il record in INVOICES
         if(allPassed(result)) {
 			log.info("checkRow - Tutti i check sono passati -> sposto il record in INVOICES");
-			guiService.moveRowToInvoice(loadingId, rowNumber, row);
+			guiService.moveRowToInvoice(loadingId, rowNumber);
 		} else {
 			log.info("checkRow - Alcuni check non sono passati");
 		}
