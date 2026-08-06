@@ -3,9 +3,11 @@ package com.skylogic.invoice.service;
 
 import java.util.List;
 
+import com.skylogic.invoice.entity.Invoice;
 import com.skylogic.invoice.entity.InvoiceRowId;
 import com.skylogic.invoice.mapper.InvoiceMapper;
 import com.skylogic.invoice.mapper.InvoiceStMapper;
+import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -48,6 +50,9 @@ public class GuiService {
 
 	@Autowired
 	private InvoiceStMapper invoiceStMapper;
+
+	@Autowired
+	private InvoiceStToInvoiceMapper invoiceStToInvoiceMapper;
 
 	// //
 	
@@ -106,17 +111,36 @@ public class GuiService {
 	@Transactional
 	public void deleteLoading(@NotBlank String loadingId) {
 		log.info("deleteLoading - START: loadingId: {}", loadingId);
+
 		invoiceStRepository.deleteByLoadingId(loadingId);
 		invoiceDiscardRepository.deleteByLoadingId(loadingId);
+
 		log.info("deleteLoading - END: loadingId: {}", loadingId);
 	}
 
-	// Da implementare: salva la riga nel DB in invoice e la toglie da staging
+	// Sposta un record da InvoiceSt a Invoice
+	@Transactional
 	public void moveRowToInvoice(@NotBlank String loadingId,
 						         @NotNull Integer rowNumber,
 						         @NotNull InvoiceStDTO invoiceStDTO) {
+
 		log.info("moveRowToInvoice - START - loadingId: {}, rowNumber: {}, invoiceStDTO: {}", loadingId, rowNumber, invoiceStDTO);
-		// Da implementare: salva la riga nel DB in invoice e la toglie da staging
+
+		// 1. Conversione da InvoiceStDTO a InvoiceDTO
+		InvoiceDTO invoiceDTO = invoiceStToInvoiceMapper.toDTO(invoiceStDTO);
+
+		// 2. Conversione da InvoiceDTO a entity Invoice
+		Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
+
+		// 3. Salvataggio del record nella tabella Invoice (loadingID e rowNumber già presenti)
+		invoiceRepository.save(invoice);
+
+		// 4. Costruzione della chiave composta
+		InvoiceRowId id = new InvoiceRowId(loadingId, rowNumber.longValue());
+
+		// 5. Elimina il record da invoiceSt (tramite id ricostruito)
+		invoiceStRepository.deleteById(id);
+
 		log.info("moveRowToInvoice - END");
 	}
 
