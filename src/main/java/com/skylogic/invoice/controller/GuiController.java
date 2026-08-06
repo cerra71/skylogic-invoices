@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@Validated
 @Controller
 public class GuiController extends GenericController {
 
@@ -92,8 +92,8 @@ public class GuiController extends GenericController {
     @PostMapping("/loadRow")
     public String loadRow(@AuthenticationPrincipal UserDetails userDetails,
                           Model model,
-                          @RequestParam("loadingId") String loadingId,
-                          @RequestParam("rowNumber") @Min(1) Integer rowNumber) {
+                          @RequestParam("loadingId") @NotBlank(message = "Loading ID is required") String loadingId,
+                          @RequestParam("rowNumber") @Min(value = 1, message = "Row Number must be at least 1") Integer rowNumber) {
 
         log.info("loadRow - START: loadingId: {}, rowNumber: {}", loadingId, rowNumber);
 
@@ -116,7 +116,7 @@ public class GuiController extends GenericController {
             if (invoiceRow == null) {
                 model.addAttribute("fields", Collections.emptyList());
                 model.addAttribute("checkEnabled", false);
-                model.addAttribute("errorMessage", "Nessun record trovato per Loading ID " + loadingId + " e Row Number " + rowNumber);
+                model.addAttribute("errorMessage", "No record found for Loading ID " + loadingId + " and Row number " + rowNumber);
 
                 log.warn("Record not found: loadingId: {}, rowNumber: {}", loadingId, rowNumber);
 
