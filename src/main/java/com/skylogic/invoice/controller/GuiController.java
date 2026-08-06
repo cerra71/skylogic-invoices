@@ -100,6 +100,10 @@ public class GuiController extends GenericController {
         InvoiceStDTO row = new InvoiceStDTO(); // Inizializziamo row a un oggetto vuoto per evitare null pointer exception
         List<InvoiceCheckResultDTO> fields = Collections.emptyList();
 
+        // Pulsanti
+        model.addAttribute("checkEnabled", false);
+        model.addAttribute("pushBackEnabled", false);
+
         // Prima ricerca: cerchiamo il record nella tabella invoice_st.
         InvoiceStDTO invoiceStRow = guiService.loadInvoiceStRow(loadingId, rowNumber);
         log.debug("loadRow - invoiceStRow: {}", invoiceStRow);
@@ -107,7 +111,11 @@ public class GuiController extends GenericController {
         // Se il record viene trovato in invoice_st
         if (invoiceStRow != null) {
         	row = invoiceStRow;
+
+            // Pulsanti
             model.addAttribute("checkEnabled", true);
+            model.addAttribute("pushBackEnabled", false);
+
         } else {
             InvoiceDTO invoiceRow = guiService.loadInvoiceRow(loadingId, rowNumber);
             log.debug("loadRow - invoiceRow: {}", invoiceRow);
@@ -115,8 +123,11 @@ public class GuiController extends GenericController {
             // Il record non esiste in nessuna delle due tabelle.
             if (invoiceRow == null) {
                 model.addAttribute("fields", Collections.emptyList());
-                model.addAttribute("checkEnabled", false);
                 model.addAttribute("errorMessage", "No record found for Loading ID " + loadingId + " and Row number " + rowNumber);
+
+                // Pulsanti
+                model.addAttribute("checkEnabled", false);
+                model.addAttribute("pushBackEnabled", false);
 
                 log.warn("Record not found: loadingId: {}, rowNumber: {}", loadingId, rowNumber);
 
@@ -128,11 +139,14 @@ public class GuiController extends GenericController {
                 return "details"; // templates/details.html
 
                 // Il record viene trovato nella tabella invoice (= ha già superato i check)
+
             } else {
             	row = invoiceStToInvoiceMapper.toEntity(invoiceRow);
 
-                // Il record è già stato controllato, quindi il pulsante Run Check è disabilitato.
+                // Pulsanti: il record è già stato controllato, quindi il pulsante Run Check è disabilitato
+                // e il pulsante Push Back abilitato.
                 model.addAttribute("checkEnabled", false);
+                model.addAttribute("pushBackEnabled", true);
             }
         }
         
@@ -160,4 +174,46 @@ public class GuiController extends GenericController {
 
         return "details";   // templates/details.html
     }
+
+
+    /**
+     * Sposta una riga dalla tabella invoice alla tabella invoice_st
+     * e aggiorna la pagina details con il nuovo stato del record.
+     *
+     * @return il nome della view {@code details}
+     */
+    @PostMapping("/moveRowToStaging")
+    public String moveRowToStaging( @RequestParam("loadingId") String loadingId,
+            @RequestParam("rowNumber") Integer rowNumber,
+            Model model) {
+
+        // 1. Carica il record dalla tabella invoice
+        InvoiceDTO invoiceDTO = guiService.loadInvoiceRow(loadingId, rowNumber);
+
+        // 2. Sposta il record da invoice a invoice_st
+        guiService.moveRowToStaging(loadingId, rowNumber, invoiceDTO);
+
+        // 3. Ricarica il record dalla tabella invoice_st
+        InvoiceStDTO row = guiService.loadInvoiceStRow(loadingId, rowNumber);
+
+        // 4. Trasforma i campi del record in una lista da visualizzare nella pagina details
+        List<InvoiceCheckResultDTO> fields = toResults(row);
+
+        // 5. Ordina i campi secondo l'ordine definito in FieldEnum
+        fields.sort(Comparator.comparingInt(this::fieldEnumOrder));
+
+        // 6. Ripopola il Model con i dati del record appena riportato in staging
+        model.addAttribute("loadingId", loadingId);
+        model.addAttribute("rowNumber", rowNumber);
+        model.addAttribute("fields", fields);
+
+        // 7. Aggiorna stato Pulsanti (record in staging)
+        model.addAttribute("checkEnabled", true);
+        model.addAttribute("pushBackEnabled", false);
+
+        return "details";
+    }
+
+
 }
+

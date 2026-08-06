@@ -40,18 +40,17 @@ public class CheckController extends GenericController {
 			               @RequestParam(name = "rowNumber", required = true) Integer rowNumber,
 		                   Model model) {
     	
-    	// Caricamento Row da DB
-        //InvoiceStDTO row = guiService.loadInvoiceStRow(loadingId, rowNumber);
-        InvoiceStDTO row = new InvoiceStDTO();
-        row.setInvoiceNumber("valore Filed1 di test");
-        row.setInvoiceDate("valore Filed2 di test");
-        row.setInvoiceNumber("invoiceNumber di test");    
-        row.setBillingAccountNumber("billingAccountNumber di test");
-        
-    	List<InvoiceCheckResultDTO> checkResult = checkService.checkRow(loadingId, rowNumber, row, checks);
-    	List<InvoiceCheckResultDTO> result = toResults(row);
+    	// 1. Caricamento di un record InvoiceStDTO dal DB
+        InvoiceStDTO row = guiService.loadInvoiceStRow(loadingId, rowNumber);
 
-    	// Sostituisce, per fieldName (case-insensitive), il bean base con quello con l'esito del check
+		// 2. Applica la funzione di controllo e restituisce una List di InvoiceCheckResultDTO
+		List<InvoiceCheckResultDTO> checkResult = checkService.checkRow(loadingId, rowNumber, row, checks);
+
+		// 3. Trasformazione di tutti i campi del DTO in una lista da mostrare nella pagina details.html
+		List<InvoiceCheckResultDTO> result = toResults(row);
+
+    	// 4. Sostituisce, per fieldName (case-insensitive) i campi controllati con gli elementi
+		// che contengono l'esito del check
     	for (int i = 0; i < result.size(); i++) {
     		InvoiceCheckResultDTO field = result.get(i);
     		for (InvoiceCheckResultDTO checked : checkResult) {
@@ -62,17 +61,28 @@ public class CheckController extends GenericController {
     		}
     	}
 
+		// 5.  Ordina i campi secondo l'ordine definito nell'Enum FieldEnum
     	result.sort(Comparator.comparingInt(this::fieldEnumOrder));
-    	
+
     	for(InvoiceCheckResultDTO field : result) {
 			log.info("checkRow - fieldName: {}, fieldValue: {}, checkFailed: {}", 
 					field.getFieldName(), field.getFieldValue(), field.getCheckFailed());
 		}
-    	
+
+		// 6. Aggiorna i valori della pagina con quelli del record
     	model.addAttribute("loadingId", loadingId);
         model.addAttribute("rowNumber", rowNumber); 
         model.addAttribute("fields", result);
-        
+
+		// 7.  Aggiorna stato Pulsanti in base a quale tabella si trova il record
+		model.addAttribute("checkEnabled",
+				guiService.loadInvoiceStRow(loadingId, rowNumber) != null
+		);
+
+		model.addAttribute("pushBackEnabled",
+				guiService.loadInvoiceRow(loadingId, rowNumber) != null
+		);
+
 		return "details"; // templates/home.html
 	}
 

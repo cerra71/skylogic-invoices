@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.skylogic.invoice.entity.Invoice;
 import com.skylogic.invoice.entity.InvoiceRowId;
+import com.skylogic.invoice.entity.InvoiceSt;
 import com.skylogic.invoice.mapper.InvoiceMapper;
 import com.skylogic.invoice.mapper.InvoiceStMapper;
 import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
@@ -54,7 +55,6 @@ public class GuiService {
 	@Autowired
 	private InvoiceStToInvoiceMapper invoiceStToInvoiceMapper;
 
-	// //
 	
 	/**
 	 * Restituisce la lista dei caricamenti, aggregando invoice_st (per loading_id,
@@ -144,6 +144,31 @@ public class GuiService {
 		log.info("moveRowToInvoice - END");
 	}
 
+	// Sposta un record da Invoice a InvoiceSt
+	@Transactional
+	public void moveRowToStaging(@NotBlank String loadingId,
+								 @NotNull Integer rowNumber,
+								 @NotNull InvoiceDTO invoiceDTO) {
+
+		log.info("moveRowToStaging - START - loadingId: {}, rowNumber: {}, invoiceDTO: {}", loadingId, rowNumber, invoiceDTO);
+
+		// 1. Conversione da InvoiceDTO a InvoiceStDTO
+		InvoiceStDTO invoiceStDTO = invoiceStToInvoiceMapper.toEntity(invoiceDTO);
+
+		// 2. Conversione da InvoiceStDTO a entity InvoiceSt
+		InvoiceSt invoiceSt = invoiceStMapper.toEntity(invoiceStDTO);
+
+		// 3. Salvataggio del record nella tabella InvoiceSt
+		invoiceStRepository.save(invoiceSt);
+
+		// 4. Costruzione della chiave composta
+		InvoiceRowId id = new InvoiceRowId(loadingId, rowNumber.longValue());
+
+		// 5. Eliminazione del record da Invoice tramite la chiave
+		invoiceRepository.deleteById(id);
+
+		log.info("moveRowToStaging - END");
+	}
 }
 
 
