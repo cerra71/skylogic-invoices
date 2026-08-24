@@ -8,6 +8,8 @@ import com.skylogic.invoice.dto.InvoiceStDTO;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 @Slf4j
 @Getter
@@ -25,8 +27,8 @@ public abstract class GenericCheck {
 	
 	public abstract InvoiceCheckResultDTO check(InvoiceStDTO row);
 	
-	protected InvoiceCheckResultDTO createCheckResult(FieldEnum field, 
-			                                          String fieldValue) {
+	protected InvoiceCheckResultDTO createCheckResult(FieldEnum field, String fieldValue) {
+
 		InvoiceCheckResultDTO result = new InvoiceCheckResultDTO();
 		result.setFieldName(field.getValue());
 		result.setFieldValue(fieldValue);
@@ -34,5 +36,9 @@ public abstract class GenericCheck {
 		result.setCheckFailed(getName());
 		return result;
 	}
+
+	// Per far eseguire SQL a tutti i Check con parametri nominali
+	@Autowired
+	protected NamedParameterJdbcTemplate jdbcTemplate;
 
 }
