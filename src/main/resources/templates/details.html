@@ -78,7 +78,7 @@
                             <th class="table-primary" th:text="${field.fieldName}"></th>
                             <td th:text="${field.fieldValue}"></td>
                             <td>
-                                <span th:if="${field.passed != null and field.passed}" class="text-success fw-bold">Passed</span>
+                                <span th:if="${field.passed != null and field.passed}" class="text-success fw-bold" th:text="'Passed: ' + ${field.checkFailed}"></span>
                                 <span th:if="${field.passed != null and !field.passed}" class="text-danger fw-bold" th:text="'Failed: ' + ${field.checkFailed}"></span>
                             </td>
                         </tr>
