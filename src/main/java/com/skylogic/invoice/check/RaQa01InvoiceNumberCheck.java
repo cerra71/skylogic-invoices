@@ -28,39 +28,12 @@ import java.util.Map;
 @Slf4j
 @Getter
 @Setter
-public class DummyCheck extends GenericCheck implements CheckI {
+public class RaQa01InvoiceNumberCheck extends GenericCheck implements CheckI {
 
 	// Costante = Codice SQL
 	private static final String SQL = """
     SELECT
-        tabella_invoice_st.invoice_number,
-        tabella_invoice_st.invoice_date,
-        tabella_invoice_st.billing_account_number,
-        tabella_invoice_st.end_customer_id,
-        tabella_invoice_st.end_customer_name,
-        tabella_invoice_st.site_connectivity_id,
-        tabella_invoice_st.site_name,
-        tabella_invoice_st.order_number,
-        tabella_invoice_st.po_reference,
-        tabella_invoice_st.network_slice_id,
-        tabella_invoice_st.service_id,
-        tabella_invoice_st.imsi,
-        tabella_invoice_st.additonal_imsi,
-        tabella_invoice_st.apn,
-        tabella_invoice_st.product_identifier,
-        tabella_invoice_st.product_offering_id,
-        tabella_invoice_st.name,
-        tabella_invoice_st.type,
-        tabella_invoice_st.rate,
-        tabella_invoice_st.start_date,
-        tabella_invoice_st.end_date,
-        tabella_invoice_st.entitlement_gb,
-        tabella_invoice_st.shared_pool_id,
-        tabella_invoice_st.usage_gb,
-        tabella_invoice_st.date,
-        tabella_invoice_st.currency,
-        tabella_invoice_st.amount,
-
+        tabella_invoice_st.invoice_number
         CASE
             WHEN (
                 SELECT COUNT(DISTINCT (matches.numero)[1])
