@@ -22,15 +22,16 @@ import java.util.Map;
 public class RaQa02InvoiceDateBillRunCheck extends GenericCheck implements CheckI {
 
 	private static final String SQL = """
-    WITH bill_run_dates AS (
-        SELECT invoice_date, COUNT(*) AS cnt
+    WITH distinct_dates AS (
+        SELECT COUNT(DISTINCT NULLIF(TRIM(invoice_date), '')) AS cnt
         FROM invoice_st
         WHERE loading_id = :loadingId
-          AND invoice_date IS NOT NULL
-          AND TRIM(invoice_date) <> ''
-        GROUP BY invoice_date
-        ORDER BY cnt DESC
-        LIMIT 1
+    ),
+    single_date AS (
+        SELECT DISTINCT NULLIF(TRIM(invoice_date), '') AS d
+        FROM invoice_st
+        WHERE loading_id = :loadingId
+          AND NULLIF(TRIM(invoice_date), '') IS NOT NULL
     )
     SELECT
         tabella_invoice_st.invoice_date,
@@ -38,7 +39,9 @@ public class RaQa02InvoiceDateBillRunCheck extends GenericCheck implements Check
             WHEN tabella_invoice_st.invoice_date IS NULL
                  OR TRIM(tabella_invoice_st.invoice_date) = ''
                 THEN 'Fail'
-            WHEN tabella_invoice_st.invoice_date = (SELECT invoice_date FROM bill_run_dates)
+            WHEN (SELECT cnt FROM distinct_dates) <> 1
+                THEN 'Fail'
+            WHEN NULLIF(TRIM(tabella_invoice_st.invoice_date), '') = (SELECT d FROM single_date)
                 THEN 'Passed'
             ELSE 'Fail'
         END AS result

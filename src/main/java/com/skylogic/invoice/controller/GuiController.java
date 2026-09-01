@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.skylogic.invoice.check.CheckI;
 import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
 import com.skylogic.invoice.dto.InvoiceDTO;
 import com.skylogic.invoice.dto.InvoiceStDTO;
@@ -36,6 +37,9 @@ public class GuiController extends GenericController {
     @Autowired
     private InvoiceStToInvoiceMapper invoiceStToInvoiceMapper;
 
+    @Autowired
+    private List<CheckI> checks;
+
     /**
      * Mostra la pagina home
      *
@@ -50,6 +54,23 @@ public class GuiController extends GenericController {
         model.addAttribute("loadings", loadings);
 
         return "home"; // templates/home.html
+    }
+
+    /**
+     * Mostra la pagina checks con l'elenco di tutti i controlli ordinati per order
+     *
+     * @return il nome della view {@code checks}
+     */
+    @GetMapping("/checks")
+    public String checks(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+
+        log.info("checks - START: Utente autenticato: {}", userDetails.getUsername());
+
+        List<CheckI> sortedChecks = new java.util.ArrayList<>(checks);
+        sortedChecks.sort(Comparator.comparing(CheckI::getOrder));
+        model.addAttribute("checks", sortedChecks);
+
+        return "checks"; // templates/checks.html
     }
 
     /**
