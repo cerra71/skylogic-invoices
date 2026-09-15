@@ -6,6 +6,7 @@ import java.util.List;
 import com.skylogic.invoice.entity.Invoice;
 import com.skylogic.invoice.entity.InvoiceRowId;
 import com.skylogic.invoice.entity.InvoiceSt;
+import com.skylogic.invoice.entity.KpiDocumentation;
 import com.skylogic.invoice.mapper.InvoiceMapper;
 import com.skylogic.invoice.mapper.InvoiceStMapper;
 import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
@@ -21,6 +22,7 @@ import com.skylogic.invoice.mapper.LoadingSummaryMapper;
 import com.skylogic.invoice.repository.InvoiceDiscardRepository;
 import com.skylogic.invoice.repository.InvoiceRepository;
 import com.skylogic.invoice.repository.InvoiceStRepository;
+import com.skylogic.invoice.repository.KpiDocumentationRepository;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,6 +44,9 @@ public class GuiService {
 
 	@Autowired
 	private InvoiceDiscardRepository invoiceDiscardRepository;
+
+	@Autowired
+	private KpiDocumentationRepository kpiDocumentationRepository;
 	
 	@Autowired
 	private LoadingSummaryMapper loadingSummaryMapper;
@@ -168,6 +173,17 @@ public class GuiService {
 		invoiceRepository.deleteById(id);
 
 		log.info("moveRowToStaging - END");
+	}
+
+	/**
+	 * Ricerca nella tabella kpi_documentation in base a kpiId (LIKE case-insensitive),
+	 * controlId (LIKE case-insensitive) e field (match esatto).
+	 */
+	public List<KpiDocumentation> searchKpiDocumentation(String kpiId, String controlId, String field) {
+		log.info("searchKpiDocumentation - START - kpiId: {}, controlId: {}, field: {}", kpiId, controlId, field);
+		List<KpiDocumentation> result = kpiDocumentationRepository.search(kpiId, controlId, field);
+		log.info("searchKpiDocumentation - END - found {} record", result.size());
+		return result;
 	}
 }
 

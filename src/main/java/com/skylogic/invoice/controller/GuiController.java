@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.skylogic.invoice.check.CheckI;
+import com.skylogic.invoice.dto.FieldEnum;
 import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
 import com.skylogic.invoice.dto.InvoiceDTO;
 import com.skylogic.invoice.dto.InvoiceStDTO;
 import com.skylogic.invoice.dto.LoadingSummaryDTO;
+import com.skylogic.invoice.entity.KpiDocumentation;
 import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
 import com.skylogic.invoice.service.GuiService;
 
@@ -66,11 +68,46 @@ public class GuiController extends GenericController {
 
         log.info("checks - START: Utente autenticato: {}", userDetails.getUsername());
 
-        List<CheckI> sortedChecks = new java.util.ArrayList<>(checks);
-        sortedChecks.sort(Comparator.comparing(CheckI::getOrder));
+        List<CheckI> sortedChecks = checks.stream()
+                .sorted(Comparator.comparing(CheckI::getOrder))
+                .toList();
         model.addAttribute("checks", sortedChecks);
 
         return "checks"; // templates/checks.html
+    }
+
+    /**
+     * Mostra la pagina documentation con form di ricerca e tabella risultati.
+     * Accetta parametri opzionali: se presenti esegue la ricerca.
+     *
+     * @return il nome della view {@code documentation}
+     */
+    @GetMapping("/documentation")
+    public String documentation(@AuthenticationPrincipal UserDetails userDetails,
+                                Model model,
+                                @RequestParam(name = "kpiId", required = false) String kpiId,
+                                @RequestParam(name = "controlId", required = false) String controlId,
+                                @RequestParam(name = "field", required = false) String field) {
+
+        log.info("documentation - START: Utente autenticato: {}, kpiId: {}, controlId: {}, field: {}",
+                userDetails.getUsername(), kpiId, controlId, field);
+
+        model.addAttribute("fieldEnums", FieldEnum.values());
+        model.addAttribute("kpiId", kpiId);
+        model.addAttribute("controlId", controlId);
+        model.addAttribute("field", field);
+
+        List<KpiDocumentation> results = Collections.emptyList();
+        if (kpiId != null || controlId != null || (field != null && !field.isBlank())) {
+            results = guiService.searchKpiDocumentation(
+                    (kpiId != null && kpiId.isBlank()) ? null : kpiId,
+                    (controlId != null && controlId.isBlank()) ? null : controlId,
+                    (field != null && field.isBlank()) ? null : field
+            );
+        }
+        model.addAttribute("results", results);
+
+        return "documentation"; // templates/documentation.html
     }
 
     /**
