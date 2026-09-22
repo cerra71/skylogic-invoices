@@ -1,6 +1,7 @@
 package com.skylogic.invoice.advice;
 
 import com.skylogic.invoice.controller.GuiController;
+import com.skylogic.invoice.dto.FieldEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSourceResolvable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -96,6 +98,44 @@ public class FormExceptionHandler {
     }
 
 
+
+    // Documentation: Control ID già presente nel database.
+    @ExceptionHandler(DuplicateControlIdException.class)
+    public String handleDuplicateControlId(DuplicateControlIdException ex,  Model model,
+                                           HttpServletRequest request) {
+
+        log.warn("handleDuplicateControlId - {}", ex.getMessage());
+
+        model.addAttribute("errorMessage", ex.getMessage());
+
+        model.addAttribute("fieldEnums", FieldEnum.values());
+        model.addAttribute("kpiId", null);
+        model.addAttribute("controlId", null);
+        model.addAttribute("field", null);
+        model.addAttribute("results", Collections.emptyList());
+
+        return "documentation";
+    }
+
+    // Documentation: KPI ID già presente nel database.
+    @ExceptionHandler(DuplicateKpiIdException.class)
+    public String handleDuplicateKpiId(
+            DuplicateKpiIdException ex,
+            Model model,
+            HttpServletRequest request) {
+
+        log.warn("handleDuplicateKpiId - {}", ex.getMessage());
+
+        model.addAttribute("errorMessage", ex.getMessage());
+
+        model.addAttribute("fieldEnums", FieldEnum.values());
+        model.addAttribute("kpiId", null);
+        model.addAttribute("controlId", null);
+        model.addAttribute("field", null);
+        model.addAttribute("results", Collections.emptyList());
+
+        return "documentation";
+    }
 
     // METODI HELPER
 

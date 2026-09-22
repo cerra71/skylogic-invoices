@@ -11,6 +11,11 @@ import java.util.List;
 @Repository
 public interface KpiDocumentationRepository extends JpaRepository<KpiDocumentation, Long> {
 
+
+    boolean existsByControlId(String controlId);
+
+    boolean existsByKpiId(String kpiId);
+
     /**
      * Ricerca combinata (LIKE case-insensitive per kpiId e controlId,
      * match esatto per field se valorizzato).

@@ -8,7 +8,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
+
     <div class="container-fluid py-4 px-4">
+
+        <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary rounded mb-4" style="padding-top: 0.75rem; padding-bottom: 0.75rem;">
             <div class="container-fluid">
                 <a th:href="@{/home}" class="navbar-brand fw-semibold d-flex align-items-center gap-2 fs-3">
@@ -19,6 +22,7 @@
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
                         <li class="nav-item">
@@ -42,14 +46,26 @@
                 </div>
             </div>
         </nav>
+        <!--- /Navbar -->
 
+        <!-- Titolo pagina -->
         <h2 class="text-center" style="margin-bottom: 3rem;">
             <span class="d-inline-block px-4 py-2 border border-dark rounded fs-1">KPI DOCUMENTATION</span>
         </h2>
+        <!-- / Titolo pagina -->
 
+        <!-- Messaggio di errore -->
+        <div th:if="${errorMessage != null}" class="alert alert-danger" role="alert">
+            <span th:text="${errorMessage}"></span>
+        </div>
+        <!-- / Messaggio di errore -->
+
+        <!-- Ricerca -->
         <div class="card mb-4 border-0">
             <div class="card-body">
                 <form th:action="@{/documentation}" method="get" class="row g-3 align-items-end">
+
+                    <!-- Campi di ricerca -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold" for="kpiId">KPI ID (ricerca libera)</label>
                         <input class="form-control" id="kpiId" type="text" name="kpiId" th:value="${kpiId}" placeholder="es. KPI_48">
@@ -68,18 +84,86 @@
                                     th:selected="${field != null and field == f.value}"></option>
                         </select>
                     </div>
+                    <!--/Campi di ricerca -->
+
+                    <!-- Pulsanti -->
                     <div class="col-md-3 d-flex gap-2">
                         <button type="submit" class="btn btn-primary flex-grow-1">
                             <i class="bi bi-search me-1"></i>SEARCH
                         </button>
-                        <a th:href="@{/documentation}" class="btn btn-outline-secondary flex-grow-1">
-                            <i class="bi bi-x-lg me-1"></i>CLEAR
-                        </a>
+
+                        <button>
+                            <a th:href="@{/documentation}" class="btn btn-outline-secondary flex-grow-1">
+                                <i class="bi bi-x-lg me-1"></i>CLEAR
+                            </a>
+                        </button>
+
+                        <button type="button" class="btn btn-success flex-grow-1" data-bs-toggle="modal" data-bs-target="#documentationModal">
+                            <i class="bi bi-plus-lg me-1"></i>NEW
+                        </button>
+
                     </div>
+                    <!-- / Pulsanti di ricerca -->
+
                 </form>
             </div>
         </div>
+        <!-- / Ricerca -->
 
+        <!-- Modale per inserimento nuova documentazione -->
+        <div class="modal fade" id="documentationModal" tabindex="-1" aria-labelledby="documentationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Header della modale -->
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="documentationModalLabel"> NEW KPI DOCUMENTATION </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"> </button>
+                    </div>
+
+                    <form th:action="@{/documentation}" method="post">
+
+                        <!-- Body della modale -->
+                        <div class="modal-body">
+
+                            <div class="mb-3">
+                                <label for="newKpiId" class="form-label fw-bold"> KPI ID </label>
+                                <input type="text" class="form-control" id="newKpiId" name="kpiId" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newControlId" class="form-label fw-bold"> Control ID </label>
+                                <input type="text" class="form-control" id="newControlId" name="controlId" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newTitle" class="form-label fw-bold"> Title </label>
+                                <textarea class="form-control"  id="newTitle" name="title" rows="3" required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newField" class="form-label fw-bold"> Field</label>
+                                <select class="form-select" id="newField" name="field" required>
+                                    <option value="">-- Seleziona un campo --</option>
+                                    <option th:each="f : ${fieldEnums}" th:value="${f.value}" th:text="${f.value}"></option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"> CANCEL </button>
+                            <button type="submit" class="btn btn-primary"> SAVE </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Risultati -->
         <div class="card mb-4 border-0">
             <div class="card-body">
                 <div class="table-responsive">
@@ -116,7 +200,10 @@
                 </div>
             </div>
         </div>
+        <!-- / Risultati -->
     </div>
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

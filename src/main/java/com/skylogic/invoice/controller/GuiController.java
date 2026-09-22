@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.skylogic.invoice.dto.*;
+import com.skylogic.invoice.service.KpiDocumentationService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,17 +14,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.skylogic.invoice.check.CheckI;
-import com.skylogic.invoice.dto.FieldEnum;
-import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
-import com.skylogic.invoice.dto.InvoiceDTO;
-import com.skylogic.invoice.dto.InvoiceStDTO;
-import com.skylogic.invoice.dto.LoadingSummaryDTO;
 import com.skylogic.invoice.entity.KpiDocumentation;
 import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
 import com.skylogic.invoice.service.GuiService;
@@ -35,6 +34,9 @@ public class GuiController extends GenericController {
 
     @Autowired
     private GuiService guiService;
+
+    @Autowired
+    private KpiDocumentationService kpiDocumentationService;
     
     @Autowired
     private InvoiceStToInvoiceMapper invoiceStToInvoiceMapper;
@@ -83,8 +85,7 @@ public class GuiController extends GenericController {
      * @return il nome della view {@code documentation}
      */
     @GetMapping("/documentation")
-    public String documentation(@AuthenticationPrincipal UserDetails userDetails,
-                                Model model,
+    public String documentation(@AuthenticationPrincipal UserDetails userDetails,Model model,
                                 @RequestParam(name = "kpiId", required = false) String kpiId,
                                 @RequestParam(name = "controlId", required = false) String controlId,
                                 @RequestParam(name = "field", required = false) String field) {
@@ -98,8 +99,8 @@ public class GuiController extends GenericController {
         model.addAttribute("field", field);
 
         List<KpiDocumentation> results = Collections.emptyList();
-        if (kpiId != null || controlId != null || (field != null && !field.isBlank())) {
-            results = guiService.searchKpiDocumentation(
+        if (kpiId != null && !kpiId.isBlank() || controlId != null && !controlId.isBlank() || (field != null && !field.isBlank())) {
+            results = kpiDocumentationService.searchKpiDocumentation(
                     (kpiId != null && kpiId.isBlank()) ? null : kpiId,
                     (controlId != null && controlId.isBlank()) ? null : controlId,
                     (field != null && field.isBlank()) ? null : field
@@ -108,6 +109,29 @@ public class GuiController extends GenericController {
         model.addAttribute("results", results);
 
         return "documentation"; // templates/documentation.html
+    }
+
+    /**
+     * Inserisce una nuova documentazione KPI.
+     */
+    @PostMapping("/documentation")
+    public String createDocumentation( @Valid KpiDocumentationDTO documentationDTO, BindingResult bindingResult){
+
+        // Impedisce lato server i campi vuoti o con soli spazi e ritorna alla pagina
+        if (bindingResult.hasErrors()) {
+            return "redirect:/documentation";
+        }
+
+        KpiDocumentation documentation = KpiDocumentation.builder()
+                .kpiId(documentationDTO.getKpiId().trim())
+                .controlId(documentationDTO.getControlId().trim())
+                .title(documentationDTO.getTitle().trim())
+                .field(documentationDTO.getField().trim())
+                .build();
+
+        kpiDocumentationService.saveKpiDocumentation(documentation);
+
+        return "redirect:/documentation";
     }
 
     /**
