@@ -20,6 +20,7 @@ public abstract class GenericCheck {
 	protected String description = "Undefined";		
 	protected FieldEnum field;
 	protected CheckCategoryEnum category;
+	protected String controlId;
 	
 	protected Integer order = 0;
 	
@@ -34,6 +35,7 @@ public abstract class GenericCheck {
 		result.setFieldValue(fieldValue);
 		result.setPassed(isPassed());
 		result.setCheckFailed(getName());
+		result.setControlId(getControlId());
 		return result;
 	}
 

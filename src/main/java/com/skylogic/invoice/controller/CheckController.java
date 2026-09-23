@@ -83,6 +83,70 @@ public class CheckController extends GenericController {
 				guiService.loadInvoiceRow(loadingId, rowNumber) != null
 		);
 
+		// 8. Div di dettaglio: mostra solo la riga controllata
+		model.addAttribute("showRowDetails", true);
+		model.addAttribute("showFileDetails", false);
+
+		return "details"; // templates/home.html
+	}
+
+	/**
+     * Effettua il check dell'intero file
+     *
+     * @return il nome della view {@code details}
+     */
+    @PostMapping("/checkFile")
+	public String checkFile(@RequestParam(name = "loadingId", required = true) String loadingId,
+			                 @RequestParam(name = "rowNumber", required = true) Integer rowNumber,
+		                     Model model) {
+
+		model.addAttribute("loadingId", loadingId);
+		model.addAttribute("rowNumber", rowNumber);
+
+		// Div di dettaglio: mostra solo il riepilogo del file
+		model.addAttribute("showRowDetails", false);
+		model.addAttribute("showFileDetails", true);
+
+		return "details"; // templates/home.html
+	}
+
+	/**
+     * Esporta il confronto in un file Excel
+     *
+     * @return il nome della view {@code details}
+     */
+    @PostMapping("/exportComparisonExcel")
+	public String exportComparisonExcel(@RequestParam(name = "loadingId", required = true) String loadingId,
+			                             @RequestParam(name = "rowNumber", required = true) Integer rowNumber,
+		                                 Model model) {
+
+		model.addAttribute("loadingId", loadingId);
+		model.addAttribute("rowNumber", rowNumber);
+
+		// Div di dettaglio: mostra il riepilogo del file
+		model.addAttribute("showRowDetails", false);
+		model.addAttribute("showFileDetails", true);
+
+		return "details"; // templates/home.html
+	}
+
+	/**
+     * Esporta le osservazioni in un file Excel
+     *
+     * @return il nome della view {@code details}
+     */
+    @PostMapping("/exportObservationExcel")
+	public String exportObservationExcel(@RequestParam(name = "loadingId", required = true) String loadingId,
+			                              @RequestParam(name = "rowNumber", required = true) Integer rowNumber,
+		                                  Model model) {
+
+		model.addAttribute("loadingId", loadingId);
+		model.addAttribute("rowNumber", rowNumber);
+
+		// Div di dettaglio: mostra il riepilogo del file
+		model.addAttribute("showRowDetails", false);
+		model.addAttribute("showFileDetails", true);
+
 		return "details"; // templates/home.html
 	}
 

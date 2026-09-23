@@ -149,6 +149,8 @@ public class GuiController extends GenericController {
         model.addAttribute("loadingId", loadingId);
         model.addAttribute("rowNumber", "1");
         model.addAttribute("checkEnabled", false);
+        model.addAttribute("showRowDetails", false);
+        model.addAttribute("showFileDetails", false);
 
         return "details"; // templates/home.html
     }
@@ -185,6 +187,10 @@ public class GuiController extends GenericController {
         // Pulsanti
         model.addAttribute("checkEnabled", false);
         model.addAttribute("pushBackEnabled", false);
+
+        // Div di dettaglio: non visibili al caricamento della riga
+        model.addAttribute("showRowDetails", false);
+        model.addAttribute("showFileDetails", false);
 
         // Prima ricerca: cerchiamo il record nella tabella invoice_st.
         InvoiceStDTO invoiceStRow = guiService.loadInvoiceStRow(loadingId, rowNumber);
@@ -251,6 +257,10 @@ public class GuiController extends GenericController {
         model.addAttribute("loadingId", loadingId);
         model.addAttribute("rowNumber", rowNumber);
         model.addAttribute("fields", fields);
+        
+        // 8. Div di dettaglio: mostra solo la riga controllata
+     	model.addAttribute("showRowDetails", true);
+     	model.addAttribute("showFileDetails", false);
 
         log.info("loadRow - END");
 
@@ -292,6 +302,10 @@ public class GuiController extends GenericController {
         // 7. Aggiorna stato Pulsanti (record in staging)
         model.addAttribute("checkEnabled", true);
         model.addAttribute("pushBackEnabled", false);
+
+        // 8. Div di dettaglio: non visibili dopo il push back
+        model.addAttribute("showRowDetails", false);
+        model.addAttribute("showFileDetails", false);
 
         return "details";
     }

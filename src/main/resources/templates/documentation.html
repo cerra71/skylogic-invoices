@@ -65,17 +65,17 @@
             <div class="card-body">
                 <form th:action="@{/documentation}" method="get" class="row g-3 align-items-end">
 
-                    <!-- Campi di ricerca -->
+                    <!-- Campi di ricerca -->                    
                     <div class="col-md-3">
-                        <label class="form-label fw-bold" for="kpiId">KPI ID (ricerca libera)</label>
-                        <input class="form-control" id="kpiId" type="text" name="kpiId" th:value="${kpiId}" placeholder="es. KPI_48">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold" for="controlId">Control ID (ricerca libera)</label>
+                        <label class="form-label fw-bold" for="controlId">Control ID</label>
                         <input class="form-control" id="controlId" type="text" name="controlId" th:value="${controlId}" placeholder="es. RA-QA-02">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-bold" for="field">Field (dropdown)</label>
+                        <label class="form-label fw-bold" for="kpiId">KPI ID</label>
+                        <input class="form-control" id="kpiId" type="text" name="kpiId" th:value="${kpiId}" placeholder="es. KPI_48">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" for="field">Field</label>
                         <select class="form-select" id="field" name="field">
                             <option value="">-- Tutti i campi --</option>
                             <option th:each="f : ${fieldEnums}"
@@ -92,11 +92,9 @@
                             <i class="bi bi-search me-1"></i>SEARCH
                         </button>
 
-                        <button>
-                            <a th:href="@{/documentation}" class="btn btn-outline-secondary flex-grow-1">
-                                <i class="bi bi-x-lg me-1"></i>CLEAR
-                            </a>
-                        </button>
+                        <a th:href="@{/documentation}" class="btn btn-outline-secondary flex-grow-1">
+                            <i class="bi bi-x-lg me-1"></i>CLEAR
+                        </a>
 
                         <button type="button" class="btn btn-success flex-grow-1" data-bs-toggle="modal" data-bs-target="#documentationModal">
                             <i class="bi bi-plus-lg me-1"></i>NEW
@@ -167,33 +165,40 @@
         <div class="card mb-4 border-0">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover align-middle" id="docs">
                         <colgroup>
                             <col style="width: 12%;">
                             <col style="width: 12%;">
-                            <col style="width: 61%;">
                             <col style="width: 15%;">
+                            <col style="width: 51%;">
+                            <col style="width: 10%;">
                         </colgroup>
                         <thead class="table-primary">
                         <tr>
-                            <th>KPI ID</th>
                             <th>CONTROL ID</th>
-                            <th>TITLE</th>
+                            <th>KPI ID</th>
                             <th>FIELD</th>
+                            <th>DESCRIPTION</th>
+                            <th>DOCUMENTATION</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="row : ${results}">
-                            <td th:text="${row.kpiId}"></td>
                             <td th:text="${row.controlId}"></td>
-                            <td th:text="${row.title}"></td>
+                            <td th:text="${row.kpiId}"></td>
                             <td th:text="${row.field}"></td>
+                            <td th:text="${row.title}"></td>
+                            <td class="text-center">
+                                <a th:href="@{/KPI_01_Skylogic_02-09-2026.pdf}" target="_blank" rel="noopener noreferrer" title="KPI_01_Skylogic_02-09-2026.pdf">
+                                    <i class="bi bi-file-earmark-pdf fs-4"></i>
+                                </a>
+                            </td>
                         </tr>
                         <tr th:if="${kpiId != null or controlId != null or (field != null and !#strings.isEmpty(field))}">
-                            <td th:if="${results == null or #lists.isEmpty(results)}" colspan="4" class="text-center text-muted">Nessun risultato trovato</td>
+                            <td th:if="${results == null or #lists.isEmpty(results)}" colspan="5" class="text-center text-muted">Nessun risultato trovato</td>
                         </tr>
                         <tr th:if="${kpiId == null and controlId == null and (field == null or #strings.isEmpty(field))}">
-                            <td colspan="4" class="text-center text-muted">Compila i campi di ricerca per visualizzare i risultati</td>
+                            <td colspan="5" class="text-center text-muted">Compila i campi di ricerca per visualizzare i risultati</td>
                         </tr>
                         </tbody>
                     </table>

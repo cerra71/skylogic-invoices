@@ -60,6 +60,7 @@ public class RaQa01InvoiceNumberCheck extends GenericCheck implements CheckI {
     	setOrder(1);
     	setField(FieldEnum.invoiceNumber);
     	setCategory(CheckCategoryEnum.valueCheck);
+    	setControlId("RA-QA-01");
     }
 
     @Override

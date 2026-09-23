@@ -18,4 +18,6 @@ public class InvoiceCheckResultDTO {
     private Boolean passed;
     
     private String checkFailed;
+    
+    private String controlId;
 }

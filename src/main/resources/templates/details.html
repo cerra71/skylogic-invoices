@@ -49,7 +49,7 @@
         </h2>
 
         <!-- Form -->
-        <form th:action="@{/loadRow}" method="post" class="d-flex align-items-end gap-3 mb-2 ps-3 pe-3">
+        <form id="mainForm" th:action="@{/loadRow}" method="post" class="d-flex align-items-end gap-3 mb-2 ps-3 pe-3">
             <div>
                 <label class="form-label fw-bold" for="loadingId">Loading ID</label>
                 <input class="form-control" id="loadingId" type="text" name="loadingId" th:value="${loadingId}">
@@ -59,11 +59,12 @@
                 <input class="form-control" id="rowNumber" name="rowNumber" th:value="${rowNumber}">
             </div>
             <button type="submit" class="btn btn-primary">LOAD ROW</button>
-            <button type="submit" class="btn btn-primary ms-auto" th:formaction="@{/moveRowToStaging}" formmethod="post" th:disabled="${pushBackEnabled != true}">PUSH BACK TO STAGING</button>
+            <button type="submit" class="btn btn-primary" th:formaction="@{/moveRowToStaging}" formmethod="post" th:disabled="${pushBackEnabled != true}">PUSH BACK TO STAGING</button>
             <button type="submit" class="btn btn-primary" th:formaction="@{/checkRow}" formmethod="post" th:disabled="${checkEnabled != true}">START CHECKING ROW</button>
+            <button type="submit" class="btn btn-danger ms-auto" th:formaction="@{/checkFile}" formmethod="post">START CHECKING FILE</button>
         </form>
 
-        <div class="card mb-4 border-0">
+        <div class="card mb-4 border-0" id="rowDetails" th:if="${showRowDetails == true}">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle">
@@ -90,6 +91,48 @@
                         </tr>
                         <tr th:if="${fields == null or #lists.isEmpty(fields)}">
                             <td colspan="3" class="text-center text-muted" th:text="${errorMessage != null ? errorMessage : 'No row loaded'}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-3 mt-5 mb-2 ps-3" th:if="${showFileDetails == true}" id="fileButtons">
+            <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportComparisonExcel}" formmethod="post">EXPORT COMPARISON EXCEL</button>
+            <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportObservationExcel}" formmethod="post">EXPORT OBSERVATION EXCEL</button>
+        </div>
+
+        <div class="card mb-4 border-0" id="fileDetails" th:if="${showFileDetails == true}">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <colgroup>
+                            <col style="width: 20%;">
+                            <col style="width: 80%;">
+                        </colgroup>
+                        <thead class="table-primary">
+                        <tr>
+                            <th>ROW NUMBER</th>
+                            <th>FAILED CHECK</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="fw-bold">1</th>
+                            <td class="fw-bold text-danger">RA-QA-01 - RA-QA-93 - RA-QA-04</th>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">12</th>
+                            <td class="fw-bold text-danger">RA-QA-04</th>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">134</th>
+                            <td class="fw-bold text-danger">RA-QA-01 - RA-QA-04</th>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">156</th>
+                            <td class="fw-bold text-danger">RA-QA-01 - RA-QA-93 - RA-QA-04</th>
                         </tr>
                         </tbody>
                     </table>
