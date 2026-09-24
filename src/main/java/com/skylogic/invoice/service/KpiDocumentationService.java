@@ -60,8 +60,11 @@ public class KpiDocumentationService {
         return result;
     }
 
+    /**
+     * Elimina una documentazione KPI tramite il suo ID.
+     */
     // DELETE
-    public void deleteById(Long id) {
+    public void deleteKpiDocumentation(Long id) {
         kpiDocumentationRepository.deleteById(id);
     }
 }

@@ -60,6 +60,12 @@
         </div>
         <!-- / Messaggio di errore -->
 
+        <!-- Messaggio di successo -->
+        <div th:if="${successMessage != null}" class="alert alert-success" role="alert">
+            <span th:text="${successMessage}"></span>
+        </div>
+        <!-- / Messaggio di successo -->
+
         <!-- Ricerca -->
         <div class="card mb-4 border-0">
             <div class="card-body">
@@ -161,6 +167,35 @@
             </div>
         </div>
 
+        <!-- Modale di conferma eliminazione documentazione -->
+        <div class="modal fade" id="deleteDocumentationModal" tabindex="-1" aria-labelledby="deleteDocumentationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Header della modale -->
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteDocumentationModalLabel"> CONFIRM DELETE </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Body della modale -->
+                    <div class="modal-body"> Are you sure you want to delete <strong id="deleteControlId"></strong>?</div>
+
+                    <!-- Footer della modale -->
+                    <div class="modal-footer">
+
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">CANCEL</button>
+
+                        <form id="deleteDocumentationForm" method="post">
+                            <button type="submit" class="btn btn-danger">DELETE </button>
+                        </form>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
         <!-- Risultati -->
         <div class="card mb-4 border-0">
             <div class="card-body">
@@ -189,9 +224,20 @@
                             <td th:text="${row.field}"></td>
                             <td th:text="${row.title}"></td>
                             <td class="text-center">
-                                <a th:href="@{/KPI_01_Skylogic_02-09-2026.pdf}" target="_blank" rel="noopener noreferrer" title="KPI_01_Skylogic_02-09-2026.pdf">
-                                    <i class="bi bi-file-earmark-pdf fs-4"></i>
-                                </a>
+
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+
+                                    <a th:href="@{/KPI_01_Skylogic_02-09-2026.pdf}" target="_blank" rel="noopener noreferrer" title="KPI_01_Skylogic_02-09-2026.pdf"
+                                       class="text-decoration-none d-inline-flex align-items-center">
+                                        <i class="bi bi-file-earmark-pdf fs-4"></i>
+                                    </a>
+
+                                    <button type="button" class="btn p-0 border-0 text-danger d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#deleteDocumentationModal"
+                                             th:attr="data-id=${row.id}, data-control-id=${row.controlId}" th:title="'Delete ' + ${row.controlId}">
+                                        <i class="bi bi-trash fs-4"></i>
+                                    </button>
+                                </div>
+
                             </td>
                         </tr>
                         <tr th:if="${kpiId != null or controlId != null or (field != null and !#strings.isEmpty(field))}">
@@ -207,5 +253,28 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const deleteModal = document.getElementById('deleteDocumentationModal');
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+
+            // Pulsante DELETE della riga che ha aperto il modal.
+            const button = event.relatedTarget;
+
+            // Dati della documentazione selezionata.
+            const id = button.getAttribute('data-id');
+            const controlId = button.getAttribute('data-control-id');
+
+            // Mostra il Control ID nel messaggio di conferma.
+            document.getElementById('deleteControlId').textContent = controlId;
+
+            // Imposta dinamicamente l'endpoint di cancellazione.
+            document.getElementById('deleteDocumentationForm').action = '/documentation/' + id + '/delete';
+
+        });
+    </script>
+
+
 </body>
 </html>

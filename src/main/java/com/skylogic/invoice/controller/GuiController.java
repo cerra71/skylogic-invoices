@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -25,6 +26,7 @@ import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
 import com.skylogic.invoice.service.GuiService;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 @Slf4j
@@ -108,7 +110,8 @@ public class GuiController extends GenericController {
      * Inserisce una nuova documentazione KPI.
      */
     @PostMapping("/documentation")
-    public String createDocumentation( @Valid KpiDocumentationDTO documentationDTO, BindingResult bindingResult){
+    public String createDocumentation(@Valid KpiDocumentationDTO documentationDTO, BindingResult bindingResult,
+                                      RedirectAttributes redirectAttributes){
 
         // Impedisce lato server i campi vuoti o con soli spazi e ritorna alla pagina
         if (bindingResult.hasErrors()) {
@@ -123,6 +126,22 @@ public class GuiController extends GenericController {
                 .build();
 
         kpiDocumentationService.saveKpiDocumentation(documentation);
+
+        // Fai redirect e mostra messaggio di successo
+        redirectAttributes.addFlashAttribute("successMessage","KPI Documentation created successfully");
+
+        return "redirect:/documentation";
+    }
+
+    /**
+     * Elimina una documentazione KPI.
+     */
+    @PostMapping("/documentation/{id}/delete")
+    public String deleteDocumentation(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+
+        kpiDocumentationService.deleteKpiDocumentation(id);
+
+        redirectAttributes.addFlashAttribute("successMessage","KPI Documentation deleted successfully");
 
         return "redirect:/documentation";
     }
