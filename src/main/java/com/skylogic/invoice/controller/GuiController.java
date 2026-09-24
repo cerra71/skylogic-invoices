@@ -251,7 +251,7 @@ public class GuiController extends GenericController {
         model.addAttribute("rowNumber", rowNumber);
         model.addAttribute("fields", fields);
         
-        // 8. Div di dettaglio: mostra solo la riga controllata
+        // Div di dettaglio: mostra solo la riga controllata
      	model.addAttribute("showRowDetails", true);
      	model.addAttribute("showFileDetails", false);
 

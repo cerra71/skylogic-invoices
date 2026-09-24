@@ -2,7 +2,6 @@ package com.skylogic.invoice.controller;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +36,16 @@ public abstract class GenericController {
         List<InvoiceCheckResultDTO> results = new ArrayList<>();
         try {
             PropertyDescriptor[] properties = Introspector.getBeanInfo(InvoiceStDTO.class, Object.class).getPropertyDescriptors();
+
             for (PropertyDescriptor property : properties) {
+
+                // Campi tecnici da non visualizzare nei Loading Details
+                if (property.getName().equals("loadingId")
+                        || property.getName().equals("rowId")
+                        || property.getName().equals("loadingTime")) {
+                    continue;
+                }
+
                 Object value = property.getReadMethod().invoke(row);
                 InvoiceCheckResultDTO result = new InvoiceCheckResultDTO();
                 result.setFieldName(property.getName());
