@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -98,14 +97,8 @@ public class GuiController extends GenericController {
         model.addAttribute("controlId", controlId);
         model.addAttribute("field", field);
 
-        List<KpiDocumentation> results = Collections.emptyList();
-        if (kpiId != null && !kpiId.isBlank() || controlId != null && !controlId.isBlank() || (field != null && !field.isBlank())) {
-            results = kpiDocumentationService.searchKpiDocumentation(
-                    (kpiId != null && kpiId.isBlank()) ? null : kpiId,
-                    (controlId != null && controlId.isBlank()) ? null : controlId,
-                    (field != null && field.isBlank()) ? null : field
-            );
-        }
+        List<KpiDocumentation> results = kpiDocumentationService.searchKpiDocumentation(kpiId, controlId, field);
+
         model.addAttribute("results", results);
 
         return "documentation"; // templates/documentation.html

@@ -197,9 +197,6 @@
                         <tr th:if="${kpiId != null or controlId != null or (field != null and !#strings.isEmpty(field))}">
                             <td th:if="${results == null or #lists.isEmpty(results)}" colspan="5" class="text-center text-muted">Nessun risultato trovato</td>
                         </tr>
-                        <tr th:if="${kpiId == null and controlId == null and (field == null or #strings.isEmpty(field))}">
-                            <td colspan="5" class="text-center text-muted">Compila i campi di ricerca per visualizzare i risultati</td>
-                        </tr>
                         </tbody>
                     </table>
                 </div>
