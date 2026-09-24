@@ -57,6 +57,7 @@ public class RaQa02InvoiceDateBillRunCheck extends GenericCheck implements Check
 		setOrder(11);
 		setField(FieldEnum.invoiceDate);
 		setCategory(CheckCategoryEnum.valueCheck);
+		setControlId("RA-QA-02");
 	}
 
 	@Override

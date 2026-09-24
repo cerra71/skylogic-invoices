@@ -52,15 +52,17 @@
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle">
                         <colgroup>
-                            <col style="width: 8%;">
-                            <col style="width: 25%;">
-                            <col style="width: 40%;">
+                            <col style="width: 7%;">
+                            <col style="width: 10%;">
+                            <col style="width: 22%;">
+                            <col style="width: 38%;">
+                            <col style="width: 11%;">
                             <col style="width: 12%;">
-                            <col style="width: 15%;">
                         </colgroup>
                         <thead class="table-primary">
                         <tr>
                             <th>ORDER</th>
+                            <th>CONTROL ID</th>
                             <th>NAME</th>
                             <th>DESCRIPTION</th>
                             <th>FIELD</th>
@@ -70,13 +72,18 @@
                         <tbody>
                         <tr th:each="check : ${checks}">
                             <td th:text="${check.order}"></td>
+                            <td>
+                                <a th:href="@{/documentation(controlId=${check.controlId})}"
+                                   th:text="${check.controlId}"
+                                   class="text-decoration-none fw-semibold"></a>
+                            </td>
                             <td th:text="${#strings.startsWith(check.name, 'Check ')} ? ${#strings.substring(check.name, 6)} : ${check.name}"></td>
                             <td th:text="${check.description}"></td>
                             <td th:text="${check.field.value}"></td>
                             <td th:text="${check.category.value}"></td>
                         </tr>
                         <tr th:if="${checks == null or #lists.isEmpty(checks)}">
-                            <td colspan="5" class="text-center text-muted">No check available</td>
+                            <td colspan="6" class="text-center text-muted">No check available</td>
                         </tr>
                         </tbody>
                     </table>

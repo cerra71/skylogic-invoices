@@ -53,6 +53,7 @@ public class RaQa07ToCheckForEmptyCellsApartExceptionsCheck extends GenericCheck
         setOrder(51);
         setField(FieldEnum.siteConnectivityId);
         setCategory(CheckCategoryEnum.valueCheck);
+        setControlId("RA-QA-07");
     }
 
     @Override

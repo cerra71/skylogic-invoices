@@ -44,6 +44,7 @@ public class RaQa04EndCustomerIdNotPresentWhenThereIsSiteConnectivityIdCheck ext
         setOrder(41);
         setField(FieldEnum.endCustomerId);
         setCategory(CheckCategoryEnum.valueCheck);
+        setControlId("RA-QA-04");
     }
 
     @Override

@@ -20,5 +20,7 @@ public interface CheckI {
 
     public CheckCategoryEnum getCategory();
 
+    public String getControlId();
+
     public boolean isPassed();
 }

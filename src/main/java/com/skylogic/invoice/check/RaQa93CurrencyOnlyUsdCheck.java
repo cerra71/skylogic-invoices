@@ -47,6 +47,7 @@ public class RaQa93CurrencyOnlyUsdCheck extends GenericCheck implements CheckI {
 		setOrder(21);
 		setField(FieldEnum.currency);
 		setCategory(CheckCategoryEnum.valueCheck);
+		setControlId("RA-QA-93");
 	}
 
 	@Override
