@@ -15,10 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import com.skylogic.invoice.check.CheckI;
 import com.skylogic.invoice.entity.KpiDocumentation;
@@ -60,6 +57,18 @@ public class GuiController extends GenericController {
 
         return "home"; // templates/home.html
     }
+
+    /**
+     * Elimina tutte le righe di un loading (invoice_st + invoice_discard) e torna alla home.
+     */
+    @PostMapping("/deleteLoading")
+    public String deleteLoading(@AuthenticationPrincipal UserDetails userDetails,
+                                @RequestParam("loadingId") String loadingId) {
+        log.info("deleteLoading - START: loadingId: {}", loadingId);
+        guiService.deleteLoading(loadingId);
+        return "redirect:/home";
+    }
+
 
     /**
      * Mostra la pagina checks con l'elenco di tutti i controlli ordinati per order
@@ -146,6 +155,8 @@ public class GuiController extends GenericController {
         return "redirect:/documentation";
     }
 
+
+
     /**
      * Mostra la pagina details
      *
@@ -167,16 +178,6 @@ public class GuiController extends GenericController {
         return "details"; // templates/home.html
     }
 
-    /**
-     * Elimina tutte le righe di un loading (invoice_st + invoice_discard) e torna alla home.
-     */
-    @PostMapping("/deleteLoading")
-    public String deleteLoading(@AuthenticationPrincipal UserDetails userDetails,
-                                @RequestParam("loadingId") String loadingId) {
-        log.info("deleteLoading - START: loadingId: {}", loadingId);
-        guiService.deleteLoading(loadingId);
-        return "redirect:/home";
-    }
 
     /**
      * Carica la riga richiesta e la mostra nella pagina details, trasformando
@@ -185,7 +186,7 @@ public class GuiController extends GenericController {
      *
      * @return il nome della view {@code details}
      */
-    @PostMapping("/loadRow")
+    @RequestMapping(value = "/loadRow", method = {RequestMethod.GET, RequestMethod.POST})
     public String loadRow(@AuthenticationPrincipal UserDetails userDetails,
                           Model model,
                           @RequestParam("loadingId") @NotBlank(message = "Loading ID is required") String loadingId,
@@ -323,5 +324,17 @@ public class GuiController extends GenericController {
     }
 
 
+
+    /**
+     * Mostra la pagina di controllo di tutte le righe della invoice_st
+     *
+     * @return il nome della view {@code details}
+     */
+    @GetMapping("/checksall")
+    public String checksAll(@RequestParam("loadingId") String loadingId, Model model) {
+        model.addAttribute("loadingId", loadingId);
+        model.addAttribute("rows", guiService.loadInvoiceStRows(loadingId));
+        return "checksall";  // templates/cheksall.html
+    }
 }
 

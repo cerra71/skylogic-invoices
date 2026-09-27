@@ -66,7 +66,7 @@ public class GuiService {
 	 * Ordinati per loading_time decrescente.
 	 * @return lista di {@link LoadingSummaryDTO} con i riepiloghi dei caricamenti.
 	 */
-	public List<LoadingSummaryDTO> getLoadings() {
+	 public List<LoadingSummaryDTO> getLoadings() {
 		List<LoadingSummaryInterface> rows = invoiceStRepository.findLoadingSummaries();
 		log.info("getLoadings - Found {} loading summaries", rows.size());
 
@@ -110,6 +110,19 @@ public class GuiService {
 	}
 
 	/**
+	 * Carica tutte le righe di invoice_st per un loading.
+	 */
+	public List<InvoiceStDTO> loadInvoiceStRows(@NotBlank String loadingId) {
+		return invoiceStRepository.findByLoadingIdOrderByRowNumAsc(loadingId)
+				.stream()
+				.map(invoiceStMapper::toDTO)
+				.toList();
+	}
+
+
+
+
+	/**
 	 * Elimina tutte le righe di un loading (da invoice_st e invoice_discard).
 	 */
 	@Transactional
@@ -121,6 +134,7 @@ public class GuiService {
 
 		log.info("deleteLoading - END: loadingId: {}", loadingId);
 	}
+
 
 	// Sposta un record da InvoiceSt a Invoice
 	@Transactional

@@ -58,10 +58,10 @@
                 <label class="form-label fw-bold" for="rowNumber">Row number</label>
                 <input class="form-control" id="rowNumber" name="rowNumber" th:value="${rowNumber}">
             </div>
-            <button type="submit" class="btn btn-primary">LOAD ROW</button>
+<!--            <button type="submit" class="btn btn-primary">LOAD ROW</button>-->
             <button type="submit" class="btn btn-primary" th:formaction="@{/moveRowToStaging}" formmethod="post" th:disabled="${pushBackEnabled != true}">PUSH BACK TO STAGING</button>
-            <button type="submit" class="btn btn-primary" th:formaction="@{/checkRow}" formmethod="post" th:disabled="${checkEnabled != true}">START CHECKING ROW</button>
-            <button type="submit" class="btn btn-danger ms-auto" th:formaction="@{/checkFile}" formmethod="post">START CHECKING FILE</button>
+<!--            <button type="submit" class="btn btn-primary" th:formaction="@{/checkRow}" formmethod="post" th:disabled="${checkEnabled != true}">START CHECKING ROW</button>-->
+
         </form>
 
         <div class="card mb-4 border-0" id="rowDetails" th:if="${showRowDetails == true}">
@@ -97,50 +97,9 @@
                 </div>
             </div>
         </div>
-        
-        <div class="d-flex gap-3 mt-5 mb-2 ps-3" th:if="${showFileDetails == true}" id="fileButtons">
-            <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportComparisonExcel}" formmethod="post">EXPORT COMPARISON EXCEL</button>
-            <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportObservationExcel}" formmethod="post">EXPORT QA TRACKER EXCEL</button>
-        </div>
 
-        <div class="card mb-4 border-0" id="fileDetails" th:if="${showFileDetails == true}">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
-                        <colgroup>
-                            <col style="width: 20%;">
-                            <col style="width: 80%;">
-                        </colgroup>
-                        <thead class="table-primary">
-                        <tr>
-                            <th>ROW NUMBER</th>
-                            <th>FAILED CHECK</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td class="fw-bold">1</td>
-                            <td class="fw-bold text-danger">RA-QA-01 - RA-QA-93 - RA-QA-04</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">12</td>
-                            <td class="fw-bold text-danger">RA-QA-04</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">134</td>
-                            <td class="fw-bold text-danger">RA-QA-01 - RA-QA-04</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">156</td>
-                            <td class="fw-bold text-danger">RA-QA-01 - RA-QA-93 - RA-QA-04</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-</body>
+    </body>
 </html>

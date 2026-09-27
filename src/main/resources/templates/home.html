@@ -115,7 +115,9 @@
                         </thead>
                         <tbody>
                             <tr th:each="loading : ${loadings}">
-                                <td><a th:href="@{/details(loadingId=${loading.loadingId})}" th:text="${loading.loadingId}"></a></td>
+                                <td>
+                                    <a th:href="@{/checksall(loadingId=${loading.loadingId})}" th:text="${loading.loadingId}"></a>
+                                </td>
                                 <td th:text="${loading.reportingYear}"></td>
                                 <td th:text="${loading.reportingMonth}"></td>
                                 <td th:text="${loading.loadingTime}"></td>

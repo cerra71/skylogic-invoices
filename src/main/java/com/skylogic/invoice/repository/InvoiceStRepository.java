@@ -34,10 +34,22 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
     List<LoadingSummaryInterface> findLoadingSummaries();
 
     /**
+     * Restituisce tutte le righe di staging associate al loading indicato,
+     * ordinate per numero di riga crescente.
+     *
+     * @param loadingId identificativo del CSV caricato
+     * @return righe presenti in invoice_st per il loading selezionato
+     */
+    List<InvoiceSt> findByLoadingIdOrderByRowNumAsc(String loadingId);
+
+    /**
      * Elimina tutte le righe di staging associate a un dato loading_id.
      */
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM public.invoice_st WHERE loading_id = :loadingId", nativeQuery = true)
     void deleteByLoadingId(@Param("loadingId") String loadingId);
+
+
+
 }

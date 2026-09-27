@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoices - Checks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+      .invoice-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .invoice-table {
+        width: max-content;
+        min-width: 262.5rem;
+        white-space: nowrap;
+      }
+
+      .invoice-table th,
+      .invoice-table td {
+        padding: .5rem .75rem;
+      }
+
+      .invoice-scroll-top {
+        width: 100%;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        height: 1.5rem;
+        margin-bottom: .25rem;
+      }
+
+      .invoice-scroll-spacer {
+        width: 262.5rem;
+        height: .0625rem;
+      }
+    </style>
+
+    <script>
+      (() => {
+        function updateWidth(topScroll, tableScroll) {
+          const spacer = topScroll.querySelector('.invoice-scroll-spacer');
+          const remSize = parseFloat(
+            getComputedStyle(document.documentElement).fontSize
+          );
+
+          spacer.style.width = (tableScroll.scrollWidth / remSize) + 'rem';
+        }
+
+        // Intercetta lo scorrimento anche degli elementi creati dopo lo script.
+        document.addEventListener('scroll', (event) => {
+          const element = event.target;
+          if (!(element instanceof Element)) return;
+
+          const topScroll = document.querySelector('.invoice-scroll-top');
+          const tableScroll = document.querySelector('.invoice-table-wrap');
+
+          if (!topScroll || !tableScroll) return;
+
+          if (element === topScroll) {
+            updateWidth(topScroll, tableScroll);
+
+            if (tableScroll.scrollLeft !== topScroll.scrollLeft) {
+              tableScroll.scrollLeft = topScroll.scrollLeft;
+            }
+          } else if (element === tableScroll) {
+            updateWidth(topScroll, tableScroll);
+
+            if (topScroll.scrollLeft !== tableScroll.scrollLeft) {
+              topScroll.scrollLeft = tableScroll.scrollLeft;
+            }
+          }
+        }, true);
+
+        function refreshWidth() {
+          const topScroll = document.querySelector('.invoice-scroll-top');
+          const tableScroll = document.querySelector('.invoice-table-wrap');
+
+          if (topScroll && tableScroll) {
+            updateWidth(topScroll, tableScroll);
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', refreshWidth);
+        window.addEventListener('resize', refreshWidth);
+      })();
+    </script>
+
+  </head>
+  <body>
+    <div class="container-fluid py-4 px-4">
+
+      <!-- Navbar -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary rounded mb-4" style="padding-top: 0.75rem; padding-bottom: 0.75rem;">
+        <div class="container-fluid">
+          <a th:href="@{/home}" class="navbar-brand fw-semibold d-flex align-items-center gap-2 fs-3">
+            <img th:src="@{/favicon.ico}" alt="" height="50" style="width: auto;">
+            INVOICES
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                  aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+              <li class="nav-item">
+                <a th:href="@{/home}" class="btn btn-outline-light btn-sm" rel="noopener noreferrer">CSV LOADINGS</a>
+              </li>
+              <li class="nav-item">
+                <a th:href="@{/details}" class="btn btn-outline-light btn-sm" rel="noopener noreferrer">LOADING DETAILS</a>
+              </li>
+              <li class="nav-item">
+                <a th:href="@{/checks}" class="btn btn-outline-light btn-sm" rel="noopener noreferrer">CHECKS LIST</a>
+              </li>
+              <li class="nav-item">
+                <a th:href="@{/documentation}" class="btn btn-outline-light btn-sm" rel="noopener noreferrer">DOCUMENTATION</a>
+              </li>
+              <li class="nav-item">
+                <form th:action="@{/logout}" method="post" class="m-0">
+                  <button type="submit" class="btn btn-light btn-sm w-100">LOGOUT</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <!-- / Navbar -->
+
+      <!-- Titolo pagina -->
+      <h2 class="text-center" style="margin-bottom: 3rem;">
+        <span class="d-inline-block px-4 py-2 border border-dark rounded fs-1">LOADING RAW</span>
+      </h2>
+      <!-- / Titolo pagina -->
+
+      <!-- Pulsanti -->
+<!--      <div class="d-flex gap-3 mt-5 mb-2 ps-3" th:if="${showFileDetails == true}" id="fileButtons">-->
+<!--        <button type="submit" class="btn btn-danger ms-auto" th:formaction="@{/checkFile}" formmethod="post">START CHECKING FILE</button>-->
+<!--        <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportComparisonExcel}" formmethod="post">EXPORT COMPARISON EXCEL</button>-->
+<!--        <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportObservationExcel}" formmethod="post">EXPORT QA TRACKER EXCEL</button>-->
+<!--      </div>-->
+      <!-- / Pulsanti -->
+
+      <!-- Righe di invoice_st (RAW CSV) -->
+      <div class="mb-3">
+        <strong>LOADING ID:</strong> <span th:text="${loadingId}"></span>
+        <span class="ms-3">
+          <strong>ROWS:</strong> <span th:text="${#lists.size(rows)}"></span>
+        </span>
+      </div>
+
+      <div class="alert alert-info" th:if="${#lists.isEmpty(rows)}">
+        Nessuna riga presente in invoice_st per questo loading.
+      </div>
+
+      <!-- Scrollbar orizzontale -->
+      <div class="invoice-scroll-top" th:unless="${#lists.isEmpty(rows)}">
+        <div class="invoice-scroll-spacer"></div>
+      </div>
+      <!-- / Scrollbar orizzontale -->
+
+      <!-- Tabella CSV -->
+      <div class="invoice-table-wrap" th:unless="${#lists.isEmpty(rows)}">
+        <table class="table table-bordered table-hover align-middle invoice-table">
+          <thead class="table-primary">
+          <tr>
+            <th>ROW NUMBER</th>
+            <th>INVOICE NUMBER</th>
+            <th>INVOICE DATE</th>
+            <th>BILLING ACCOUNT NUMBER</th>
+            <th>END CUSTOMER ID</th>
+            <th>END CUSTOMER NAME</th>
+            <th>SITE CONNECTIVITY ID</th>
+            <th>SITE NAME</th>
+            <th>ORDER NUMBER</th>
+            <th>PO REFERENCE</th>
+            <th>NETWORK SLICE ID</th>
+            <th>SERVICE ID</th>
+            <th>IMSI</th>
+            <th>ADDITIONAL IMSI</th>
+            <th>APN</th>
+            <th>PRODUCT IDENTIFIER</th>
+            <th>PRODUCT OFFERING ID</th>
+            <th>NAME</th>
+            <th>TYPE</th>
+            <th>RATE</th>
+            <th>START DATE</th>
+            <th>END DATE</th>
+            <th>ENTITLEMENT GB</th>
+            <th>SHARED POOL ID</th>
+            <th>USAGE GB</th>
+            <th>DATE</th>
+            <th>CURRENCY</th>
+            <th>AMOUNT</th>
+            <th>LOADING ID</th>
+            <th>LOADING TIME</th>
+            <th>DETAILS</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="row : ${rows}">
+            <td>
+              <a th:href="@{/loadRow(loadingId=${loadingId},rowNumber=${row.rowNum})}" th:text="${row.rowNum}"></a>
+            </td>
+            <td th:text="${row.invoiceNumber}"></td>
+            <td th:text="${row.invoiceDate}"></td>
+            <td th:text="${row.billingAccountNumber}"></td>
+            <td th:text="${row.endCustomerId}"></td>
+            <td th:text="${row.endCustomerName}"></td>
+            <td th:text="${row.siteConnectivityId}"></td>
+            <td th:text="${row.siteName}"></td>
+            <td th:text="${row.orderNumber}"></td>
+            <td th:text="${row.poReference}"></td>
+            <td th:text="${row.networkSliceId}"></td>
+            <td th:text="${row.serviceId}"></td>
+            <td th:text="${row.imsi}"></td>
+            <td th:text="${row.additionalImsi}"></td>
+            <td th:text="${row.apn}"></td>
+            <td th:text="${row.productIdentifier}"></td>
+            <td th:text="${row.productOfferingId}"></td>
+            <td th:text="${row.name}"></td>
+            <td th:text="${row.type}"></td>
+            <td th:text="${row.rate}"></td>
+            <td th:text="${row.startDate}"></td>
+            <td th:text="${row.endDate}"></td>
+            <td th:text="${row.entitlementGb}"></td>
+            <td th:text="${row.sharedPoolId}"></td>
+            <td th:text="${row.usageGb}"></td>
+            <td th:text="${row.date}"></td>
+            <td th:text="${row.currency}"></td>
+            <td th:text="${row.amount}"></td>
+            <td th:text="${row.loadingId}"></td>
+            <td th:text="${row.loadingTime}"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- / Tabella CSV -->
+
+
+<!--      <div class="card mb-4 border-0" id="fileDetails" th:if="${showFileDetails == true}">-->
+<!--        <div class="card-body">-->
+<!--          <div class="table-responsive">-->
+<!--            <table class="table table-bordered table-hover align-middle">-->
+<!--              <colgroup>-->
+<!--                <col style="width: 20%;">-->
+<!--                <col style="width: 80%;">-->
+<!--              </colgroup>-->
+<!--              <thead class="table-primary">-->
+<!--              <tr>-->
+<!--                <th>ROW NUMBER</th>-->
+<!--                <th>FAILED CHECK</th>-->
+<!--              </tr>-->
+<!--              </thead>-->
+<!--              <tbody>-->
+<!--              <tr>-->
+<!--                <td class="fw-bold">1</td>-->
+<!--                <td class="fw-bold text-danger">RA-QA-01 - RA-QA-93 - RA-QA-04</td>-->
+<!--              </tr>-->
+<!--              <tr>-->
+<!--                <td class="fw-bold">12</td>-->
+<!--                <td class="fw-bold text-danger">RA-QA-04</td>-->
+<!--              </tr>-->
+<!--              <tr>-->
+<!--                <td class="fw-bold">134</td>-->
+<!--                <td class="fw-bold text-danger">RA-QA-01 - RA-QA-04</td>-->
+<!--              </tr>-->
+<!--              <tr>-->
+<!--                <td class="fw-bold">156</td>-->
+<!--                <td class="fw-bold text-danger">RA-QA-01 - RA-QA-93 - RA-QA-04</td>-->
+<!--              </tr>-->
+<!--              </tbody>-->
+<!--            </table>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+    </div>
+
+
+  </body>
+</html>
+
+
+
