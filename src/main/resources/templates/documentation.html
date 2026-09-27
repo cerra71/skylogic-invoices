@@ -86,7 +86,9 @@
                                 <option th:each="f : ${fieldEnums}"
                                         th:value="${f.value}"
                                         th:text="${f.value}"
-                                        th:selected="${field != null and field == f.value}"></option>
+                                        th:selected="${field != null and field == f.value}">
+
+                                </option>
                             </select>
                         </div>
                         <!--/Campi di ricerca -->
