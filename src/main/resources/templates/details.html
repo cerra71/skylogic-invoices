@@ -100,7 +100,7 @@
         
         <div class="d-flex gap-3 mt-5 mb-2 ps-3" th:if="${showFileDetails == true}" id="fileButtons">
             <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportComparisonExcel}" formmethod="post">EXPORT COMPARISON EXCEL</button>
-            <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportObservationExcel}" formmethod="post">EXPORT OBSERVATION EXCEL</button>
+            <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportObservationExcel}" formmethod="post">EXPORT QA TRACKER EXCEL</button>
         </div>
 
         <div class="card mb-4 border-0" id="fileDetails" th:if="${showFileDetails == true}">
