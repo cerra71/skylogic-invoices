@@ -109,7 +109,7 @@ public class CheckController extends GenericController {
 
         log.info("checkFileLoading - START - loadingId: {}", loadingId);
 
-        FileCheckSummaryDTO summary = checkService.checkFile(loadingId, checks);
+        FileCheckSummaryDTO summary = checkService.checkFile(loadingId, checks, true);
 
         redirectAttributes.addFlashAttribute(
                 "successMessage",
@@ -147,7 +147,11 @@ public class CheckController extends GenericController {
 
         log.info("checkFile - START from loading raw page: loadingId: {}", loadingId);
 
-        FileCheckSummaryDTO summary = checkService.checkFile(loadingId, checks);
+        // moveRows = false: Loading RAW e' una pagina di ANALISI; le righe Passed
+        // NON vengono spostate cosi' la query sotto (ricerca standard come la GET)
+        // restituisce TUTTE le righe del file (esattamente come prima del click sul
+        // pulsante start checking file).
+        FileCheckSummaryDTO summary = checkService.checkFile(loadingId, checks, false);
 
         model.addAttribute("loadingId", loadingId);
         model.addAttribute("fileSummary", summary);
@@ -157,8 +161,10 @@ public class CheckController extends GenericController {
         failedRows.sort(Map.Entry.comparingByKey());
         model.addAttribute("failedRows", failedRows);
 
-        // Ricostruisce la tabella rows (prima pagina, senza filtri) per mostrare
-        // in contemporanea i campi del file con le nuove info di check
+        // RICARICA TABELLA RAW ESATTAMENTE COME LA GET /checksall
+        // (stessa identica chiamata del GuiController.checksAll, senza filtri e
+        // pagina 0): cosi' il rendering di rows / pagine / filtri e' IDENTICO
+        // a quando entri per la prima volta nella pagina (funzionante).
         Page<InvoiceStDTO> rowsPage = guiService.searchInvoiceStRows(
                 loadingId, "", "", "", "EQ", false, "", "EQ", false, 0
         );

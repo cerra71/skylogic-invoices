@@ -106,12 +106,18 @@ public class CheckService {
      *       in 1 riga → tutto il campo considerato Failed).</li>
      * </ul>
      *
-     * <p>OTTIMIZZAZIONE VELOCITÀ: i controlli che estendono GenericCheck
-     * vengono eseguiti in BATCH (1 sola query per check che restituisce
-     * row_num + result per TUTTE le righe) e poi riusi in memoria.
+     * @param loadingId id del caricamento
+     * @param checks    lista dei controlli
+     * @param moveRows  se true le righe Passed vengono spostate da invoice_st
+     *                  a invoice (usato dalla home). Se false rimangono in
+     *                  staging (usato dalla pagina Loading RAW per mantenere
+     *                  la tabella raw piena dopo il check).
      */
-    public FileCheckSummaryDTO checkFile(@NotBlank String loadingId, List<CheckI> checks) {
-        log.info("checkFile - START (mode: batch for GenericChecks) - loadingId: {}", loadingId);
+    public FileCheckSummaryDTO checkFile(@NotBlank String loadingId,
+                                         List<CheckI> checks,
+                                         boolean moveRows) {
+        log.info("checkFile - START (mode: batch for GenericChecks, moveRows={}) - loadingId: {}",
+                moveRows, loadingId);
         long start = System.currentTimeMillis();
 
         FileCheckSummaryDTO summary = new FileCheckSummaryDTO(loadingId);
@@ -181,8 +187,12 @@ public class CheckService {
             summary.setRowsChecked(summary.getRowsChecked() + 1);
             if (allPassed(mergedRowResults)) {
                 summary.setRowsPassed(summary.getRowsPassed() + 1);
-                log.debug("checkFile - Row {} passed → move to invoice", rowNumber);
-                guiService.moveRowToInvoice(loadingId, rowNumber, row);
+                if (moveRows) {
+                    log.debug("checkFile - Row {} passed → move to invoice", rowNumber);
+                    guiService.moveRowToInvoice(loadingId, rowNumber, row);
+                } else {
+                    log.debug("checkFile - Row {} passed (not moved - Loading RAW view)", rowNumber);
+                }
             } else {
                 summary.setRowsFailed(summary.getRowsFailed() + 1);
 
@@ -221,8 +231,8 @@ public class CheckService {
         summary.setDurationMs(System.currentTimeMillis() - start);
         summary.setExecuted(true);
         log.info(
-                "checkFile - END (batch mode) - loadingId: {}, checked: {}, passed: {}, failed: {}, alreadyMoved: {}, ms: {}",
-                loadingId, summary.getRowsChecked(), summary.getRowsPassed(), summary.getRowsFailed(),
+                "checkFile - END (batch mode, moveRows={}) - loadingId: {}, checked: {}, passed: {}, failed: {}, alreadyMoved: {}, ms: {}",
+                moveRows, loadingId, summary.getRowsChecked(), summary.getRowsPassed(), summary.getRowsFailed(),
                 summary.getRowsAlreadyMoved(), summary.getDurationMs()
         );
         return summary;

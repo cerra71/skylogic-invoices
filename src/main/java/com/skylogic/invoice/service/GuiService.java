@@ -154,6 +154,8 @@ public class GuiService {
 			boolean usageInclusive,
 			int page) {
 
+		String billingNorm = billingAccountNumber == null ? "" : billingAccountNumber.trim();
+		String siteNorm = siteConnectivityId == null ? "" : siteConnectivityId.trim();
 		Long entitlementValue = parseGbFilter(entitlementGb, "Entitlement GB");
 		Long usageValue = parseGbFilter(usageGb, "Usage GB");
 
@@ -168,10 +170,26 @@ public class GuiService {
 
 		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
 
+		// --- FAST PATH ---
+		// Se TUTTI i filtri sono "vuoti"/default, non scomodiamo la query nativa
+		// CON parametri (che qualche volta da binding NULL strani e torna 0 righe).
+		// Usiamo invece la findByLoadingId semplice (stessa identica paginazione
+		// 1000 righe) — cosi' la ricerca default torna SEMPRE risultati corretti.
+		final boolean allFiltersEmpty =
+				billingNorm.isEmpty()
+						&& siteNorm.isEmpty()
+						&& entitlementValue == null
+						&& usageValue == null;
+		if (allFiltersEmpty) {
+			return invoiceStRepository
+					.findByLoadingIdOrderByRowNumAsc(loadingId, pageable)
+					.map(invoiceStMapper::toDTO);
+		}
+
 		return invoiceStRepository.searchInvoiceStRowsNumeric(
 				loadingId,
-				billingAccountNumber == null ? "" : billingAccountNumber.trim(),
-				siteConnectivityId == null ? "" : siteConnectivityId.trim(),
+				billingNorm,
+				siteNorm,
 				entitlementValue,
 				entitlementOperator,
 				entitlementInclusive,
@@ -183,7 +201,13 @@ public class GuiService {
 	}
 
 	/**
-	 * Metodo di supporto: converte il filtro in un intero. Un campo vuoto disattiva il filtro.
+	 * Metodo di supporto: converte il filtro in un intero (Long) usato dal
+	 * repository. Un campo vuoto disattiva il filtro.
+	 * <p>
+	 * Accetta anche numeri decimali (punto o virgola come separatore): il valore
+	 * viene convertito in Long per compatibilita' con la firma del repository,
+	 * mentre la query SQL (tramite {@code CAST(:param AS NUMERIC)}) tratta
+	 * comunque il valore come numero a virgola mobile.
 	 */
 	private Long parseGbFilter(String value, String fieldName) {
 		if (value == null || value.isBlank()) {
@@ -191,15 +215,21 @@ public class GuiService {
 		}
 
 		String normalized = value.trim();
+		// Supporta sia il punto che la virgola come separatore decimale.
+		normalized = normalized.replace(',', '.');
 
-		if (!normalized.matches("[+-]?[0-9]+")) {
+		// Regex: intero oppure numero decimale (es. "81", "81.937825", "-3.14").
+		if (!normalized.matches("[+-]?[0-9]+(\\.[0-9]+)?")) {
 			throw new IllegalArgumentException(
-					fieldName + ": inserire un numero intero."
+					fieldName + ": inserire un numero intero o decimale."
 			);
 		}
 
 		try {
-			return Long.valueOf(normalized);
+			// Il repository si aspetta un Long, ma poiche' nella query c'e'
+			// CAST(:param AS NUMERIC) possiamo tranquillamente passare la
+			// parte intera (troncata).
+			return Double.valueOf(normalized).longValue();
 		} catch (NumberFormatException ex) {
 			throw new IllegalArgumentException(
 					fieldName + ": valore fuori dall'intervallo supportato."

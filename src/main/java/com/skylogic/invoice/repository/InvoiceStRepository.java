@@ -111,12 +111,12 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
     CROSS JOIN LATERAL (
         SELECT
             CASE
-                WHEN TRIM(i.entitlement_gb) ~ '^[+-]?[0-9]+$'
+                WHEN TRIM(i.entitlement_gb) ~ '^[+-]?[0-9]+(\\.[0-9]+)?$'
                 THEN CAST(TRIM(i.entitlement_gb) AS NUMERIC)
                 ELSE NULL
             END AS entitlement_value,
             CASE
-                WHEN TRIM(i.usage_gb) ~ '^[+-]?[0-9]+$'
+                WHEN TRIM(i.usage_gb) ~ '^[+-]?[0-9]+(\\.[0-9]+)?$'
                 THEN CAST(TRIM(i.usage_gb) AS NUMERIC)
                 ELSE NULL
             END AS usage_value
@@ -130,35 +130,35 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
               ILIKE CONCAT('%', :siteConnectivityId, '%'))
 
       AND (
-          CAST(:entitlementGb AS NUMERIC) IS NULL
+          :entitlementGb IS NULL
           OR CASE :entitlementOperator
               WHEN 'EQ' THEN
                   gb.entitlement_value = CAST(:entitlementGb AS NUMERIC)
               WHEN 'GT' THEN
                   gb.entitlement_value > CAST(:entitlementGb AS NUMERIC)
-                  OR (:entitlementInclusive AND
-                      gb.entitlement_value = CAST(:entitlementGb AS NUMERIC))
+                  OR (CAST(:entitlementInclusive AS BOOLEAN) IS TRUE
+                      AND gb.entitlement_value = CAST(:entitlementGb AS NUMERIC))
               WHEN 'LT' THEN
                   gb.entitlement_value < CAST(:entitlementGb AS NUMERIC)
-                  OR (:entitlementInclusive AND
-                      gb.entitlement_value = CAST(:entitlementGb AS NUMERIC))
+                  OR (CAST(:entitlementInclusive AS BOOLEAN) IS TRUE
+                      AND gb.entitlement_value = CAST(:entitlementGb AS NUMERIC))
               ELSE FALSE
           END
       )
 
       AND (
-          CAST(:usageGb AS NUMERIC) IS NULL
+          :usageGb IS NULL
           OR CASE :usageOperator
               WHEN 'EQ' THEN
                   gb.usage_value = CAST(:usageGb AS NUMERIC)
               WHEN 'GT' THEN
                   gb.usage_value > CAST(:usageGb AS NUMERIC)
-                  OR (:usageInclusive AND
-                      gb.usage_value = CAST(:usageGb AS NUMERIC))
+                  OR (CAST(:usageInclusive AS BOOLEAN) IS TRUE
+                      AND gb.usage_value = CAST(:usageGb AS NUMERIC))
               WHEN 'LT' THEN
                   gb.usage_value < CAST(:usageGb AS NUMERIC)
-                  OR (:usageInclusive AND
-                      gb.usage_value = CAST(:usageGb AS NUMERIC))
+                  OR (CAST(:usageInclusive AS BOOLEAN) IS TRUE
+                      AND gb.usage_value = CAST(:usageGb AS NUMERIC))
               ELSE FALSE
           END
       )
