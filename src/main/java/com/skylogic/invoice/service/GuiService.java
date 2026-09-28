@@ -138,6 +138,30 @@ public class GuiService {
 				.map(invoiceStMapper::toDTO);
 	}
 
+	/**
+	 * Cerca le righe della invoice_st usando i filtri.
+	 * Restituisce i risultati come DTO, in pagine da 1000 righe.
+	 */
+	public Page<InvoiceStDTO> searchInvoiceStRows(
+			@NotBlank String loadingId,
+			String billingAccountNumber,
+			String siteConnectivityId,
+			String entitlementGb,
+			String usageGb,
+			int page) {
+
+		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
+
+		return invoiceStRepository.searchInvoiceStRows(
+				loadingId,
+				billingAccountNumber == null ? "" : billingAccountNumber.trim(),
+				siteConnectivityId == null ? "" : siteConnectivityId.trim(),
+				entitlementGb == null ? "" : entitlementGb.trim(),
+				usageGb == null ? "" : usageGb.trim(),
+				pageable
+		).map(invoiceStMapper::toDTO);
+	}
+
 
 	/**
 	 * Elimina tutte le righe di un loading (da invoice_st e invoice_discard).

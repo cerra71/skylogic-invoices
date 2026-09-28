@@ -134,32 +134,100 @@
       </h2>
       <!-- / Titolo pagina -->
 
-      <!-- Pulsanti -->
-<!--      <div class="d-flex gap-3 mt-5 mb-2 ps-3" th:if="${showFileDetails == true}" id="fileButtons">-->
-<!--        <button type="submit" class="btn btn-danger ms-auto" th:formaction="@{/checkFile}" formmethod="post">START CHECKING FILE</button>-->
-<!--        <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportComparisonExcel}" formmethod="post">EXPORT COMPARISON EXCEL</button>-->
-<!--        <button type="submit" class="btn btn-danger" form="mainForm" th:formaction="@{/exportObservationExcel}" formmethod="post">EXPORT QA TRACKER EXCEL</button>-->
-<!--      </div>-->
-      <!-- / Pulsanti -->
-
       <!-- Righe di invoice_st (RAW CSV) -->
       <div class="mb-3">
         <strong>LOADING ID:</strong> <span th:text="${loadingId}"></span>
         <span class="ms-3">
-          <strong>TOTAL ROWS:</strong>
+          <strong>TOTAL RESULTS:</strong>
             <span th:text="${totalRows}"></span>
         </span>
-
-        <span class="ms-3">
-          <strong>ROWS ON THIS PAGE:</strong>
-          <span th:text="${#lists.size(rows)}"></span>
-        </span>
-
       </div>
       <!-- / Righe di invoice_st (RAW CSV) -->
 
+      <!-- Pulsanti -->
+      <div class="d-flex flex-wrap justify-content-end gap-3 mt-4 mb-3" id="fileButtons">
+
+        <button type="button" class="btn btn-danger">
+          START CHECKING FILE
+        </button>
+
+        <button type="button" class="btn btn-danger">
+          EXPORT COMPARISON EXCEL
+        </button>
+
+        <button type="button" class="btn btn-danger">
+          EXPORT QA TRACKER EXCEL
+        </button>
+
+      </div>
+      <!-- / Pulsanti -->
+
+      <!-- Filtri di ricerca -->
+      <form th:action="@{/checksall}" method="get" class="mb-4">
+        <input type="hidden" name="loadingId" th:value="${loadingId}">
+        <input type="hidden" name="page" value="0">
+
+        <div class="row g-3">
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <label for="billingAccountNumber" class="form-label">
+              Billing Account Number
+            </label>
+            <input type="text"
+                   id="billingAccountNumber"
+                   name="billingAccountNumber"
+                   class="form-control"
+                   th:value="${billingAccountNumber}">
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <label for="siteConnectivityId" class="form-label">
+              Site Connectivity ID
+            </label>
+            <input type="text"
+                   id="siteConnectivityId"
+                   name="siteConnectivityId"
+                   class="form-control"
+                   th:value="${siteConnectivityId}">
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <label for="entitlementGb" class="form-label">
+              Entitlement GB
+            </label>
+            <input type="text"
+                   id="entitlementGb"
+                   name="entitlementGb"
+                   class="form-control"
+                   th:value="${entitlementGb}">
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <label for="usageGb" class="form-label">
+              Usage GB
+            </label>
+            <input type="text"
+                   id="usageGb"
+                   name="usageGb"
+                   class="form-control"
+                   th:value="${usageGb}">
+          </div>
+
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button type="submit" class="btn btn-primary">SEARCH</button>
+
+          <a th:href="@{/checksall(loadingId=${loadingId})}"
+             class="btn btn-outline-secondary">
+            CLEAR
+          </a>
+        </div>
+      </form>
+      <!-- / Filtri di ricerca -->
+
       <div class="alert alert-info" th:if="${#lists.isEmpty(rows)}">
-        Nessuna riga presente in invoice_st per questo loading.
+        Nessuna riga trovata per questa tabella e i filtri selezionati.
       </div>
 
       <!-- Pulsanti di navigazione delle pagine -->
@@ -169,24 +237,28 @@
           <li class="page-item" th:classappend="${!hasPrevious} ? 'disabled'">
             <a class="page-link"
                th:if="${hasPrevious}"
-               th:href="@{/checksall(loadingId=${loadingId},page=${currentPage - 1})}">
-              PREVIOUS
+               th:href="@{/checksall(loadingId=${loadingId}, page=${currentPage - 1},
+               billingAccountNumber=${billingAccountNumber}, siteConnectivityId=${siteConnectivityId},
+               entitlementGb=${entitlementGb}, usageGb=${usageGb})}">
+               PREVIOUS
             </a>
             <span class="page-link" th:unless="${hasPrevious}">PREVIOUS</span>
           </li>
 
           <li class="page-item">
-      <span class="page-link text-body">
-        PAGE <span th:text="${currentPage + 1}"></span>
-        OF <span th:text="${totalPages}"></span>
-      </span>
+            <span class="page-link text-body">
+              PAGE <span th:text="${currentPage + 1}"></span>
+              OF <span th:text="${totalPages}"></span>
+            </span>
           </li>
 
           <li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
             <a class="page-link"
                th:if="${hasNext}"
-               th:href="@{/checksall(loadingId=${loadingId},page=${currentPage + 1})}">
-              NEXT
+               th:href="@{/checksall(loadingId=${loadingId}, page=${currentPage + 1},
+               billingAccountNumber=${billingAccountNumber}, siteConnectivityId=${siteConnectivityId},
+               entitlementGb=${entitlementGb}, usageGb=${usageGb})}">
+               NEXT
             </a>
             <span class="page-link" th:unless="${hasNext}">NEXT</span>
           </li>
@@ -236,7 +308,6 @@
             <th>AMOUNT</th>
             <th>LOADING ID</th>
             <th>LOADING TIME</th>
-            <th>DETAILS</th>
           </tr>
           </thead>
           <tbody>

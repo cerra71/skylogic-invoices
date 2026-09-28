@@ -325,17 +325,33 @@ public class GuiController extends GenericController {
     }
 
     /**
-     * Mostra una pagina di 1000 righe della tabella invoice_st
+     * Mostra le righe di invoice_st con filtri facoltativi
+     * e paginazione da 1000 righe.
      */
     @GetMapping("/checksall")
     public String checksAll(
             @RequestParam("loadingId") String loadingId,
             @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "billingAccountNumber", defaultValue = "")
+            String billingAccountNumber,
+            @RequestParam(name = "siteConnectivityId", defaultValue = "")
+            String siteConnectivityId,
+            @RequestParam(name = "entitlementGb", defaultValue = "")
+            String entitlementGb,
+            @RequestParam(name = "usageGb", defaultValue = "")
+            String usageGb,
             Model model) {
 
-        Page<InvoiceStDTO> result =
-                guiService.loadInvoiceStRows(loadingId, page);
+        Page<InvoiceStDTO> result = guiService.searchInvoiceStRows(
+                loadingId,
+                billingAccountNumber,
+                siteConnectivityId,
+                entitlementGb,
+                usageGb,
+                page
+        );
 
+        // Dati della tabella e della paginazione.
         model.addAttribute("loadingId", loadingId);
         model.addAttribute("rows", result.getContent());
         model.addAttribute("currentPage", result.getNumber());
@@ -343,6 +359,12 @@ public class GuiController extends GenericController {
         model.addAttribute("totalRows", result.getTotalElements());
         model.addAttribute("hasPrevious", result.hasPrevious());
         model.addAttribute("hasNext", result.hasNext());
+
+        // Mantiene nei campi i filtri utilizzati.
+        model.addAttribute("billingAccountNumber", billingAccountNumber);
+        model.addAttribute("siteConnectivityId", siteConnectivityId);
+        model.addAttribute("entitlementGb", entitlementGb);
+        model.addAttribute("usageGb", usageGb);
 
         return "checksall"; // templates/checksall.html
     }

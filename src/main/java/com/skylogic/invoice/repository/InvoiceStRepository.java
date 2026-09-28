@@ -67,5 +67,34 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
             Pageable pageable
     );
 
+    /**
+     * Cerca le righe del loading applicando solo i filtri compilati.
+     * I filtri si combinano e i risultati sono paginati.
+     */
+    @Query("""
+    SELECT i
+    FROM InvoiceSt i
+    WHERE i.loadingId = :loadingId
+      AND (:billingAccountNumber = ''
+           OR LOWER(i.billingAccountNumber)
+              LIKE LOWER(CONCAT('%', :billingAccountNumber, '%')))
+      AND (:siteConnectivityId = ''
+           OR LOWER(i.siteConnectivityId)
+              LIKE LOWER(CONCAT('%', :siteConnectivityId, '%')))
+      AND (:entitlementGb = ''
+           OR i.entitlementGb = :entitlementGb)
+      AND (:usageGb = ''
+           OR i.usageGb = :usageGb)
+    ORDER BY i.rowNum ASC
+    """)
+    Page<InvoiceSt> searchInvoiceStRows(
+            @Param("loadingId") String loadingId,
+            @Param("billingAccountNumber") String billingAccountNumber,
+            @Param("siteConnectivityId") String siteConnectivityId,
+            @Param("entitlementGb") String entitlementGb,
+            @Param("usageGb") String usageGb,
+            Pageable pageable
+    );
+
 
 }
