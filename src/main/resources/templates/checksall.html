@@ -27,6 +27,14 @@
           color: var(--bs-danger);
         }
 
+        /* Filtri (xl): campi testo 1 parte, campi GB 2 parti, spaziatore 2 parti */
+        @media (min-width: 1200px) {
+          .row > .search-field-wide,
+          .row > .search-spacer {
+            flex-grow: 2;
+          }
+        }
+
         .invoice-scroll-top {
           width: 100%;
           overflow-x: scroll;
@@ -136,19 +144,19 @@
         <div class="row g-3">
 
           <!-- Billing account number -->
-          <div class="col-12 col-md-6 col-xl">
+          <div class="col-6 col-md-3 col-xl">
             <label for="billingAccountNumber" class="form-label">Billing Account Number</label>
             <input type="text" id="billingAccountNumber" name="billingAccountNumber" class="form-control" th:value="${billingAccountNumber}">
           </div>
 
           <!-- Site Connectivity Id -->
-          <div class="col-12 col-md-6 col-xl">
+          <div class="col-6 col-md-3 col-xl">
             <label for="siteConnectivityId" class="form-label">Site Connectivity ID</label>
             <input type="text" id="siteConnectivityId" name="siteConnectivityId" class="form-control" th:value="${siteConnectivityId}">
           </div>
 
           <!-- Entitlement GB -->
-          <div class="col-12 col-md-6 col-xl">
+          <div class="col-12 col-md-6 col-xl search-field-wide">
             <label for="entitlementGb" class="form-label">Entitlement GB</label>
 
             <div class="input-group">
@@ -169,7 +177,7 @@
           </div>
 
           <!-- Usage GB -->
-          <div class="col-12 col-md-6 col-xl">
+          <div class="col-12 col-md-6 col-xl search-field-wide">
             <label for="usageGb" class="form-label"> Usage GB </label>
 
             <div class="input-group">
@@ -189,12 +197,22 @@
             </div>
           </div>
 
-          <!-- Pulsanti ricerca -->
-          <div class="col-12 col-xl-auto">
+          <!-- Pulsanti ricerca: subito dopo i campi -->
+          <div class="col-auto">
             <label class="form-label d-none d-xl-block">&nbsp;</label>
-            <div class="d-flex justify-content-end gap-2">
+            <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary">SEARCH</button>
               <a th:href="@{/checksall(loadingId=${loadingId})}" class="btn btn-outline-secondary">CLEAR </a>
+            </div>
+          </div>
+
+          <!-- Spaziatore (solo xl): con i campi occupa lo spazio che avevano in origine i 4 campi -->
+          <div class="col-xl d-none d-xl-block search-spacer"></div>
+
+          <!-- START CHECKING FILE: allineato a destra -->
+          <div class="col-auto ms-auto">
+            <label class="form-label d-none d-xl-block">&nbsp;</label>
+            <div class="d-flex">
               <!-- Associato a checkFileForm (i form non possono essere annidati) -->
               <button type="submit"
                       form="checkFileForm"
