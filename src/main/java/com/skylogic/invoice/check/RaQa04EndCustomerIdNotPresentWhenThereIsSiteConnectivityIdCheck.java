@@ -41,7 +41,7 @@ public class RaQa04EndCustomerIdNotPresentWhenThereIsSiteConnectivityIdCheck ext
     private void init() {
         setName("Check RA-QA-04: KPI_4_1_END_CUSTOMER_ID_IS_NULL");
         setDescription("Individuare le righe in cui END_CUSTOMER_ID è Null, Blank o composto da soli spazi quando è presente SITE_CONNECTIVITY_ID");
-        setOrder(41);
+        setOrder(4);
         setField(FieldEnum.endCustomerId);
         setCategory(CheckCategoryEnum.valueCheck);
         setControlId("RA-QA-04");

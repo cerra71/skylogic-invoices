@@ -50,7 +50,7 @@ public class RaQa07ToCheckForEmptyCellsApartExceptionsCheck extends GenericCheck
     private void init() {
         setName("Check RA-QA-07: KPI_7_TO_CHECK_FOR_ANY_EMPTY_CELLS_FOR_SITE_CONNECTIVITY_ID");
         setDescription("Individuare le righe in cui Site Connectivity Id è Null, Blank o fatto da soli spazi");
-        setOrder(51);
+        setOrder(5);
         setField(FieldEnum.siteConnectivityId);
         setCategory(CheckCategoryEnum.valueCheck);
         setControlId("RA-QA-07");

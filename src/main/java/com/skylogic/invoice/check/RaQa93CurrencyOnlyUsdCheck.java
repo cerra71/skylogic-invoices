@@ -44,7 +44,7 @@ public class RaQa93CurrencyOnlyUsdCheck extends GenericCheck implements CheckI {
 	private void init() {
 		setName("Check RA-QA-93: KPI_35_CURRENCY_COLUMN_CONTAINS_BLANK_SITECONNECTIVITY_MRC");
 		setDescription("Controllo di qualita del dato (KPI) relativo al campo CURRENCY. Verifica: RA-QA-93 - 1) TO VALIDATE WHETHER COLUMN CONTAINS USD ALONE OR NOT??. La view restituisce tutte le righe anomale che non rispettano la regola definita dal KPI, consentendo di identificare e correggere i dati di fatturazione non conformi.");
-		setOrder(21);
+		setOrder(3);
 		setField(FieldEnum.currency);
 		setCategory(CheckCategoryEnum.valueCheck);
 		setControlId("RA-QA-93");

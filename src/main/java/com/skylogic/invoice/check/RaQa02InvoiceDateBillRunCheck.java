@@ -54,7 +54,7 @@ public class RaQa02InvoiceDateBillRunCheck extends GenericCheck implements Check
 	private void init() {
 		setName("Check RA-QA-02: KPI_41_INVOICE_DATE_IS_NOT_SAME_AS_THE_BILL_RUN_MONTH");
 		setDescription("Controllo di qualita del dato (KPI) relativo al campo INVOICE DATE. Verifica: RA-QA-02 - TO VERIFY WHETHER IT HAS SAME DATE AS OF CURRENT BILL RUN OR NOT??. La view restituisce tutte le righe anomale che non rispettano la regola definita dal KPI, consentendo di identificare e correggere i dati di fatturazione non conformi.");
-		setOrder(11);
+		setOrder(2);
 		setField(FieldEnum.invoiceDate);
 		setCategory(CheckCategoryEnum.valueCheck);
 		setControlId("RA-QA-02");
