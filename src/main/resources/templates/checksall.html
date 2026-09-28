@@ -22,6 +22,11 @@
           padding: .5rem .75rem;
         }
 
+        /* Testo rosso nella tabella esiti check file (vince sul colore di .table / .table-hover) */
+        #tableDetails td:not(:first-child) {
+          color: var(--bs-danger);
+        }
+
         .invoice-scroll-top {
           width: 100%;
           overflow-x: scroll;
@@ -121,95 +126,7 @@
       </div>
       <!-- / Righe di invoice_st (RAW CSV) -->
 
-      <!-- Pulsanti -->
-      <div class="d-flex flex-wrap justify-content-end gap-3 mt-4 mb-3" id="fileButtons">
-
-        <form method="post" th:action="@{/checkFile}" id="checkFileForm">
-          <input type="hidden" name="loadingId" th:value="${loadingId}">
-          <button type="submit"
-                  class="btn btn-danger"
-                  id="startCheckFileBtn">
-            <span id="checkFileSpinner"
-                  class="spinner-border spinner-border-sm d-none me-1"
-                  aria-hidden="true"></span>
-            <span id="checkFileBtnLabel">START CHECKING FILE</span>
-          </button>
-        </form>
-
-        <form method="post" th:action="@{/exportComparisonExcel}">
-          <input type="hidden" name="loadingId" th:value="${loadingId}">
-          <input type="hidden" name="rowNumber" value="1">
-          <button type="submit" class="btn btn-danger">
-            EXPORT COMPARISON EXCEL
-          </button>
-        </form>
-
-        <form method="post" th:action="@{/exportObservationExcel}">
-          <input type="hidden" name="loadingId" th:value="${loadingId}">
-          <input type="hidden" name="rowNumber" value="1">
-          <button type="submit" class="btn btn-danger">
-            EXPORT QA TRACKER EXCEL
-          </button>
-        </form>
-
-      </div>
-      <!-- / Pulsanti -->
-
-      <!-- Alert summary dopo check file -->
-      <div class="alert alert-info mb-3 alert-dismissible fade show" role="alert"
-           th:if="${fileSummary != null and fileSummary.executed}">
-        <strong>Check file completato.</strong>
-        <span>Checked: <span class="fw-bold" th:text="${fileSummary.rowsChecked}"></span></span>
-        <span class="mx-2">|</span>
-        <span class="text-success">Passed: <span class="fw-bold" th:text="${fileSummary.rowsPassed}"></span></span>
-        <span class="mx-2">|</span>
-        <span class="text-danger">Failed: <span class="fw-bold" th:text="${fileSummary.rowsFailed}"></span></span>
-        <span class="mx-2">|</span>
-        <span>Already moved to invoice: <span class="fw-bold" th:text="${fileSummary.rowsAlreadyMoved}"></span></span>
-        <span class="mx-2">|</span>
-        <span>Duration: <span class="fw-bold" th:text="${#numbers.formatDecimal(fileSummary.durationMs / 1000.0, 1, 2) + ' s'}"></span></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-
-      <!-- Tabella risultati CHECK FILE (stessa struttura del check della singola riga in details - SENZA banner giallo) -->
-      <div class="card mb-4 border-0"
-           th:if="${fileSummary != null and fileSummary.executed and #lists.isEmpty(fileSummary.fileLevelResults) == false}">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-              <colgroup>
-                <col style="width: 25%;">
-                <col style="width: 30%;">
-                <col style="width: 45%;">
-              </colgroup>
-              <thead class="table-primary">
-              <tr>
-                <th>FIELD NAME</th>
-                <th>FIELD VALUE (riepilogo file)</th>
-                <th>CHECK RESULT</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr th:each="field : ${fileSummary.fileLevelResults}">
-                <th class="table-primary" th:text="${field.fieldName}"></th>
-                <td th:text="${field.fieldValue}"></td>
-                <td>
-                  <span th:if="${field.passed != null and field.passed}"
-                        class="text-success fw-bold"
-                        th:text="'Passed: ' + ${field.checkFailed}"></span>
-                  <span th:if="${field.passed != null and !field.passed}"
-                        class="text-danger fw-bold"
-                        th:text="'Failed: ' + ${field.checkFailed}"></span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <!-- / Tabella risultati file -->
-
-      <div class="alert alert-danger" role="alert" th:if="${filterError != null}" th:text="${filterError}"> </div>
+     <div class="alert alert-danger" role="alert" th:if="${filterError != null}" th:text="${filterError}"> </div>
 
       <!-- Filtri di ricerca -->
       <form th:action="@{/checksall}" method="get" class="mb-4">
@@ -219,19 +136,19 @@
         <div class="row g-3">
 
           <!-- Billing account number -->
-          <div class="col-12 col-md-6 col-lg-3">
+          <div class="col-12 col-md-6 col-xl">
             <label for="billingAccountNumber" class="form-label">Billing Account Number</label>
             <input type="text" id="billingAccountNumber" name="billingAccountNumber" class="form-control" th:value="${billingAccountNumber}">
           </div>
 
           <!-- Site Connectivity Id -->
-          <div class="col-12 col-md-6 col-lg-3">
+          <div class="col-12 col-md-6 col-xl">
             <label for="siteConnectivityId" class="form-label">Site Connectivity ID</label>
             <input type="text" id="siteConnectivityId" name="siteConnectivityId" class="form-control" th:value="${siteConnectivityId}">
           </div>
 
           <!-- Entitlement GB -->
-          <div class="col-12 col-md-6 col-lg-3">
+          <div class="col-12 col-md-6 col-xl">
             <label for="entitlementGb" class="form-label">Entitlement GB</label>
 
             <div class="input-group">
@@ -252,7 +169,7 @@
           </div>
 
           <!-- Usage GB -->
-          <div class="col-12 col-md-6 col-lg-3">
+          <div class="col-12 col-md-6 col-xl">
             <label for="usageGb" class="form-label"> Usage GB </label>
 
             <div class="input-group">
@@ -272,14 +189,41 @@
             </div>
           </div>
 
-        </div>
+          <!-- Pulsanti ricerca -->
+          <div class="col-12 col-xl-auto">
+            <label class="form-label d-none d-xl-block">&nbsp;</label>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="submit" class="btn btn-primary">SEARCH</button>
+              <a th:href="@{/checksall(loadingId=${loadingId})}" class="btn btn-outline-secondary">CLEAR </a>
+              <!-- Associato a checkFileForm (i form non possono essere annidati) -->
+              <button type="submit"
+                      form="checkFileForm"
+                      class="btn btn-danger"
+                      id="startCheckFileBtn">
+                <span id="checkFileSpinner"
+                      class="spinner-border spinner-border-sm d-none me-1"
+                      aria-hidden="true"></span>
+                <span id="checkFileBtnLabel">START CHECKING FILE</span>
+              </button>
+            </div>
+          </div>
 
-        <div class="d-flex justify-content-end gap-2 mt-3">
-          <button type="submit" class="btn btn-primary">SEARCH</button>
-          <a th:href="@{/checksall(loadingId=${loadingId})}" class="btn btn-outline-secondary">CLEAR </a>
         </div>
       </form>
       <!-- / Filtri di ricerca -->
+
+      <form method="post" th:action="@{/checkFile}" id="checkFileForm">
+        <input type="hidden" name="loadingId" th:value="${loadingId}">
+      </form>
+
+      <!--
+        Visibilità tabelle:
+        - apertura pagina / SEARCH / CLEAR (GET /checksall): fileSummary è null → searchTable
+        - START CHECKING FILE (POST /checkFile): fileSummary valorizzato → fileDetails
+      -->
+
+      <!-- Avviso e paginazione: solo in modalità ricerca -->
+      <th:block th:if="${fileSummary == null}">
 
       <div class="alert alert-info" th:if="${#lists.isEmpty(rows)}">
         Nessuna riga trovata per questa tabella e i filtri selezionati.
@@ -340,6 +284,31 @@
       </nav>
       <!-- / Pulsanti di navigazione delle pagine -->
 
+      </th:block>
+
+      <!-- Pulsanti export: sopra la tabella tableDetails, solo dopo START CHECKING FILE -->
+      <div class="d-flex flex-wrap justify-content-start gap-3 mb-3"
+           th:if="${fileSummary != null and not #lists.isEmpty(rows)}">
+
+        <form method="post" th:action="@{/exportComparisonExcel}">
+          <input type="hidden" name="loadingId" th:value="${loadingId}">
+          <input type="hidden" name="rowNumber" value="1">
+          <button type="submit" class="btn btn-danger">
+            EXPORT COMPARISON EXCEL
+          </button>
+        </form>
+
+        <form method="post" th:action="@{/exportObservationExcel}">
+          <input type="hidden" name="loadingId" th:value="${loadingId}">
+          <input type="hidden" name="rowNumber" value="1">
+          <button type="submit" class="btn btn-danger">
+            EXPORT QA TRACKER EXCEL
+          </button>
+        </form>
+
+      </div>
+      <!-- / Pulsanti export -->
+
       <!-- Scrollbar orizzontale -->
       <div class="invoice-scroll-top" th:unless="${#lists.isEmpty(rows)}">
         <div class="invoice-scroll-spacer"></div>
@@ -347,7 +316,7 @@
       <!-- / Scrollbar orizzontale -->
 
       <!-- Tabella CSV -->
-      <div class="invoice-table-wrap" th:unless="${#lists.isEmpty(rows)}">
+      <div class="invoice-table-wrap" th:if="${fileSummary == null and not #lists.isEmpty(rows)}" id="searchTable">
         <table class="table table-bordered table-hover align-middle invoice-table">
           <thead class="table-primary">
           <tr>
@@ -422,48 +391,151 @@
         </table>
       </div>
       <!-- / Tabella CSV -->
-
-
-      <!-- Tabella esiti check file: ROW NUMBER + FAILED CHECK (CODICI CONTROLLO) -->
-      <div class="card mb-4 border-0" id="fileDetails"
-           th:if="${failedRows != null and not #lists.isEmpty(failedRows)}">
-        <div class="card-header bg-danger-subtle text-danger fw-bold border border-danger border-bottom-0">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          CHECK RESULTS - FAILED ROWS
-        </div>
-        <div class="card-body pt-0">
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-              <colgroup>
-                <col style="width: 20%;">
-                <col style="width: 80%;">
-              </colgroup>
-              <thead class="table-primary">
-              <tr>
-                <th>ROW NUMBER</th>
-                <th>FAILED CHECK</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr th:each="failedRow : ${failedRows}">
-                <td class="fw-bold">
-                  <a th:href="@{/loadRow(loadingId=${loadingId}, rowNumber=${failedRow.key})}"
-                     class="text-decoration-none"
-                     th:text="${failedRow.key}"
-                     title="Apri la riga nella pagina details (con campi già caricati)"></a>
-                </td>
-                <td class="fw-bold text-danger">
-                  <span th:each="cid, stat : ${failedRow.value}">
-                    <span th:text="${cid}"></span>
-                    <span th:if="${!stat.last}" class="mx-1">-</span>
-                  </span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      
+      <!-- Tabella esiti check file -->
+      <div class="invoice-table-wrap" th:if="${fileSummary != null and not #lists.isEmpty(rows)}" id="fileDetails">
+        <table class="table table-bordered table-hover align-middle invoice-table" id ="tableDetails">
+          <thead class="table-primary">
+          <tr>
+            <th>ROW NUMBER</th>
+            <th>INVOICE NUMBER</th>
+            <th>INVOICE DATE</th>
+            <th>BILLING ACCOUNT NUMBER</th>
+            <th>END CUSTOMER ID</th>
+            <th>END CUSTOMER NAME</th>
+            <th>SITE CONNECTIVITY ID</th>
+            <th>SITE NAME</th>
+            <th>ORDER NUMBER</th>
+            <th>PO REFERENCE</th>
+            <th>NETWORK SLICE ID</th>
+            <th>SERVICE ID</th>
+            <th>IMSI</th>
+            <th>ADDITIONAL IMSI</th>
+            <th>APN</th>
+            <th>PRODUCT IDENTIFIER</th>
+            <th>PRODUCT OFFERING ID</th>
+            <th>NAME</th>
+            <th>TYPE</th>
+            <th>RATE</th>
+            <th>START DATE</th>
+            <th>END DATE</th>
+            <th>ENTITLEMENT GB</th>
+            <th>SHARED POOL ID</th>
+            <th>USAGE GB</th>
+            <th>DATE</th>
+            <th>CURRENCY</th>
+            <th>AMOUNT</th>
+            <th>LOADING ID</th>
+            <th>LOADING TIME</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>
+              <a th:href="@{/loadRow(loadingId=${loadingId},rowNumber=1)}" th:text="1"></a>
+            </td>
+            <td>RA_QA_01</td>
+            <td></td>
+            <td>RA_QA_93</td>
+            <td></td>
+            <td></td>
+            <td>RA_QA_7</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>
+              <a th:href="@{/loadRow(loadingId=${loadingId},rowNumber=134)}" th:text="134"></a>
+            </td>
+            <td></td>
+            <td>RA_QA_02</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>RA_QA_04</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>
+              <a th:href="@{/loadRow(loadingId=${loadingId},rowNumber=214)}" th:text="214"></a>
+            </td>
+            <td></td>
+            <td></td>
+            <td>RA_QA_01</td>
+            <td>RA_QA_04</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          </tbody>
+        </table>
       </div>
+      <!-- / Tabella esiti check file -->
 
       <!-- Messaggio quando il check è eseguito ma non ci sono righe fallite -->
       <div class="alert alert-success mb-3" role="alert"
