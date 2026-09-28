@@ -139,27 +139,86 @@ public class GuiService {
 	}
 
 	/**
-	 * Cerca le righe della invoice_st usando i filtri.
-	 * Restituisce i risultati come DTO, in pagine da 1000 righe.
+	 * Cerca le righe della invoice_st applicando filtri testuali e numerici.
+	 * Restituisce pagine da 1000 righe.
 	 */
 	public Page<InvoiceStDTO> searchInvoiceStRows(
 			@NotBlank String loadingId,
 			String billingAccountNumber,
 			String siteConnectivityId,
 			String entitlementGb,
+			String entitlementOperator,
+			boolean entitlementInclusive,
 			String usageGb,
+			String usageOperator,
+			boolean usageInclusive,
 			int page) {
+
+		Long entitlementValue = parseGbFilter(entitlementGb, "Entitlement GB");
+		Long usageValue = parseGbFilter(usageGb, "Usage GB");
+
+		// L'operatore serve soltanto quando è presente un valore.
+		if (entitlementValue != null) {
+			validateGbOperator(entitlementOperator);
+		}
+
+		if (usageValue != null) {
+			validateGbOperator(usageOperator);
+		}
 
 		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
 
-		return invoiceStRepository.searchInvoiceStRows(
+		return invoiceStRepository.searchInvoiceStRowsNumeric(
 				loadingId,
 				billingAccountNumber == null ? "" : billingAccountNumber.trim(),
 				siteConnectivityId == null ? "" : siteConnectivityId.trim(),
-				entitlementGb == null ? "" : entitlementGb.trim(),
-				usageGb == null ? "" : usageGb.trim(),
+				entitlementValue,
+				entitlementOperator,
+				entitlementInclusive,
+				usageValue,
+				usageOperator,
+				usageInclusive,
 				pageable
 		).map(invoiceStMapper::toDTO);
+	}
+
+	/**
+	 * Metodo di supporto: converte il filtro in un intero. Un campo vuoto disattiva il filtro.
+	 */
+	private Long parseGbFilter(String value, String fieldName) {
+		if (value == null || value.isBlank()) {
+			return null;
+		}
+
+		String normalized = value.trim();
+
+		if (!normalized.matches("[+-]?[0-9]+")) {
+			throw new IllegalArgumentException(
+					fieldName + ": inserire un numero intero."
+			);
+		}
+
+		try {
+			return Long.valueOf(normalized);
+		} catch (NumberFormatException ex) {
+			throw new IllegalArgumentException(
+					fieldName + ": valore fuori dall'intervallo supportato."
+			);
+		}
+	}
+
+	/**
+	 * Metodo di supporto: accetta soltanto gli operatori previsti dal form.
+	 */
+	private void validateGbOperator(String operator) {
+		if (!"EQ".equals(operator)
+				&& !"GT".equals(operator)
+				&& !"LT".equals(operator)) {
+
+			throw new IllegalArgumentException(
+					"Operatore di confronto non valido."
+			);
+		}
 	}
 
 

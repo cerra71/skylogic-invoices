@@ -55,7 +55,7 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
 
 
     /**
-     * Recupera una pagina delle righe di staging del loading selezionato,
+     * Recupera una pagina delle righe del CSV selezionato,
      * ordinate per numero di riga crescente.
      *
      * @param loadingId identificativo del CSV caricato
@@ -68,7 +68,7 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
     );
 
     /**
-     * Cerca le righe del loading applicando solo i filtri compilati.
+     * Cerca le righe di invoice_st applicando solo i filtri compilati.
      * I filtri si combinano e i risultati sono paginati.
      */
     @Query("""
@@ -93,6 +93,86 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
             @Param("siteConnectivityId") String siteConnectivityId,
             @Param("entitlementGb") String entitlementGb,
             @Param("usageGb") String usageGb,
+            Pageable pageable
+    );
+
+    String NUMERIC_FILTER_SQL = """
+    FROM public.invoice_st i
+    CROSS JOIN LATERAL (
+        SELECT
+            CASE
+                WHEN TRIM(i.entitlement_gb) ~ '^[+-]?[0-9]+$'
+                THEN CAST(TRIM(i.entitlement_gb) AS NUMERIC)
+                ELSE NULL
+            END AS entitlement_value,
+            CASE
+                WHEN TRIM(i.usage_gb) ~ '^[+-]?[0-9]+$'
+                THEN CAST(TRIM(i.usage_gb) AS NUMERIC)
+                ELSE NULL
+            END AS usage_value
+    ) gb
+    WHERE i.loading_id = :loadingId
+      AND (:billingAccountNumber = ''
+           OR i.billing_account_number
+              ILIKE CONCAT('%', :billingAccountNumber, '%'))
+      AND (:siteConnectivityId = ''
+           OR i.site_connectivity_id
+              ILIKE CONCAT('%', :siteConnectivityId, '%'))
+
+      AND (
+          CAST(:entitlementGb AS NUMERIC) IS NULL
+          OR CASE :entitlementOperator
+              WHEN 'EQ' THEN
+                  gb.entitlement_value = CAST(:entitlementGb AS NUMERIC)
+              WHEN 'GT' THEN
+                  gb.entitlement_value > CAST(:entitlementGb AS NUMERIC)
+                  OR (:entitlementInclusive AND
+                      gb.entitlement_value = CAST(:entitlementGb AS NUMERIC))
+              WHEN 'LT' THEN
+                  gb.entitlement_value < CAST(:entitlementGb AS NUMERIC)
+                  OR (:entitlementInclusive AND
+                      gb.entitlement_value = CAST(:entitlementGb AS NUMERIC))
+              ELSE FALSE
+          END
+      )
+
+      AND (
+          CAST(:usageGb AS NUMERIC) IS NULL
+          OR CASE :usageOperator
+              WHEN 'EQ' THEN
+                  gb.usage_value = CAST(:usageGb AS NUMERIC)
+              WHEN 'GT' THEN
+                  gb.usage_value > CAST(:usageGb AS NUMERIC)
+                  OR (:usageInclusive AND
+                      gb.usage_value = CAST(:usageGb AS NUMERIC))
+              WHEN 'LT' THEN
+                  gb.usage_value < CAST(:usageGb AS NUMERIC)
+                  OR (:usageInclusive AND
+                      gb.usage_value = CAST(:usageGb AS NUMERIC))
+              ELSE FALSE
+          END
+      )
+    """;
+
+    /**
+     * Cerca le righe di invoice_st con confronti numerici sui GB.
+     * Un valore GB null disattiva il relativo filtro.
+     */
+    @Query(
+            value = "SELECT i.* " + NUMERIC_FILTER_SQL + " ORDER BY i.row_num ASC",
+            countQuery = "SELECT COUNT(*) " + NUMERIC_FILTER_SQL,
+            nativeQuery = true
+    )
+    Page<InvoiceSt> searchInvoiceStRowsNumeric(
+            @Param("loadingId") String loadingId,
+            @Param("billingAccountNumber") String billingAccountNumber,
+            @Param("siteConnectivityId") String siteConnectivityId,
+            @Param("entitlementGb") Long entitlementGb,
+            @Param("entitlementOperator") String entitlementOperator,
+            @Param("entitlementInclusive") boolean entitlementInclusive,
+            @Param("usageGb") Long usageGb,
+            @Param("usageOperator") String usageOperator,
+            @Param("usageInclusive") boolean usageInclusive,
             Pageable pageable
     );
 

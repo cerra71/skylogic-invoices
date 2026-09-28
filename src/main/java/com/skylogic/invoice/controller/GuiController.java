@@ -338,20 +338,39 @@ public class GuiController extends GenericController {
             String siteConnectivityId,
             @RequestParam(name = "entitlementGb", defaultValue = "")
             String entitlementGb,
+            @RequestParam(name = "entitlementOperator", defaultValue = "EQ")
+            String entitlementOperator,
+            @RequestParam(name = "entitlementInclusive", defaultValue = "false")
+            boolean entitlementInclusive,
             @RequestParam(name = "usageGb", defaultValue = "")
             String usageGb,
+            @RequestParam(name = "usageOperator", defaultValue = "EQ")
+            String usageOperator,
+            @RequestParam(name = "usageInclusive", defaultValue = "false")
+            boolean usageInclusive,
             Model model) {
 
-        Page<InvoiceStDTO> result = guiService.searchInvoiceStRows(
-                loadingId,
-                billingAccountNumber,
-                siteConnectivityId,
-                entitlementGb,
-                usageGb,
-                page
-        );
+        Page<InvoiceStDTO> result;
 
-        // Dati della tabella e della paginazione.
+        try {
+            result = guiService.searchInvoiceStRows(
+                    loadingId,
+                    billingAccountNumber,
+                    siteConnectivityId,
+                    entitlementGb,
+                    entitlementOperator,
+                    entitlementInclusive,
+                    usageGb,
+                    usageOperator,
+                    usageInclusive,
+                    page
+            );
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("filterError", ex.getMessage());
+            result = Page.empty();
+        }
+
+        // Tabella e paginazione.
         model.addAttribute("loadingId", loadingId);
         model.addAttribute("rows", result.getContent());
         model.addAttribute("currentPage", result.getNumber());
@@ -360,13 +379,19 @@ public class GuiController extends GenericController {
         model.addAttribute("hasPrevious", result.hasPrevious());
         model.addAttribute("hasNext", result.hasNext());
 
-        // Mantiene nei campi i filtri utilizzati.
+        // Valori dei filtri.
         model.addAttribute("billingAccountNumber", billingAccountNumber);
         model.addAttribute("siteConnectivityId", siteConnectivityId);
         model.addAttribute("entitlementGb", entitlementGb);
         model.addAttribute("usageGb", usageGb);
 
-        return "checksall"; // templates/checksall.html
+        // Operatori e checkbox.
+        model.addAttribute("entitlementOperator", entitlementOperator);
+        model.addAttribute("entitlementInclusive", entitlementInclusive);
+        model.addAttribute("usageOperator", usageOperator);
+        model.addAttribute("usageInclusive", usageInclusive);
+
+        return "checksall";
     }
 }
 

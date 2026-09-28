@@ -162,6 +162,8 @@
       </div>
       <!-- / Pulsanti -->
 
+      <div class="alert alert-danger" role="alert" th:if="${filterError != null}" th:text="${filterError}"> </div>
+
       <!-- Filtri di ricerca -->
       <form th:action="@{/checksall}" method="get" class="mb-4">
         <input type="hidden" name="loadingId" th:value="${loadingId}">
@@ -169,59 +171,65 @@
 
         <div class="row g-3">
 
+          <!-- Billing account number -->
           <div class="col-12 col-md-6 col-lg-3">
-            <label for="billingAccountNumber" class="form-label">
-              Billing Account Number
-            </label>
-            <input type="text"
-                   id="billingAccountNumber"
-                   name="billingAccountNumber"
-                   class="form-control"
-                   th:value="${billingAccountNumber}">
+            <label for="billingAccountNumber" class="form-label">Billing Account Number</label>
+            <input type="text" id="billingAccountNumber" name="billingAccountNumber" class="form-control" th:value="${billingAccountNumber}">
           </div>
 
+          <!-- Site Connectivity Id -->
           <div class="col-12 col-md-6 col-lg-3">
-            <label for="siteConnectivityId" class="form-label">
-              Site Connectivity ID
-            </label>
-            <input type="text"
-                   id="siteConnectivityId"
-                   name="siteConnectivityId"
-                   class="form-control"
-                   th:value="${siteConnectivityId}">
+            <label for="siteConnectivityId" class="form-label">Site Connectivity ID</label>
+            <input type="text" id="siteConnectivityId" name="siteConnectivityId" class="form-control" th:value="${siteConnectivityId}">
           </div>
 
+          <!-- Entitlement GB -->
           <div class="col-12 col-md-6 col-lg-3">
-            <label for="entitlementGb" class="form-label">
-              Entitlement GB
-            </label>
-            <input type="text"
-                   id="entitlementGb"
-                   name="entitlementGb"
-                   class="form-control"
-                   th:value="${entitlementGb}">
+            <label for="entitlementGb" class="form-label">Entitlement GB</label>
+
+            <div class="input-group">
+              <select name="entitlementOperator" class="form-select">
+                <option value="EQ" th:selected="${entitlementOperator == null or entitlementOperator == 'EQ'}"> Uguale a </option>
+                <option value="GT" th:selected="${entitlementOperator == 'GT'}"> Maggiore di </option>
+                <option value="LT" th:selected="${entitlementOperator == 'LT'}">Minore di </option>
+              </select>
+
+              <input type="number" id="entitlementGb" name="entitlementGb" class="form-control" step="1" th:value="${entitlementGb}">
+            </div>
+
+            <div class="form-check mt-2">
+              <input type="checkbox" id="entitlementInclusive" name="entitlementInclusive" class="form-check-input" value="true" th:checked="${entitlementInclusive == true}">
+              <label for="entitlementInclusive" class="form-check-label"> Includi il limite (maggiore/minore)</label>
+            </div>
+
           </div>
 
+          <!-- Usage GB -->
           <div class="col-12 col-md-6 col-lg-3">
-            <label for="usageGb" class="form-label">
-              Usage GB
-            </label>
-            <input type="text"
-                   id="usageGb"
-                   name="usageGb"
-                   class="form-control"
-                   th:value="${usageGb}">
+            <label for="usageGb" class="form-label"> Usage GB </label>
+
+            <div class="input-group">
+              <select name="usageOperator" class="form-select">
+                <option value="EQ" th:selected="${usageOperator == null or usageOperator == 'EQ'}">Uguale a</option>
+                <option value="GT" th:selected="${usageOperator == 'GT'}">Maggiore di </option>
+                <option value="LT" th:selected="${usageOperator == 'LT'}">Minore di</option>
+              </select>
+
+              <input type="number" id="usageGb" name="usageGb" class="form-control" step="1" th:value="${usageGb}">
+
+            </div>
+
+            <div class="form-check mt-2">
+              <input type="checkbox" id="usageInclusive" name="usageInclusive" class="form-check-input" value="true" th:checked="${usageInclusive == true}">
+              <label for="usageInclusive" class="form-check-label">Includi il limite (maggiore/minore)</label>
+            </div>
           </div>
 
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-3">
           <button type="submit" class="btn btn-primary">SEARCH</button>
-
-          <a th:href="@{/checksall(loadingId=${loadingId})}"
-             class="btn btn-outline-secondary">
-            CLEAR
-          </a>
+          <a th:href="@{/checksall(loadingId=${loadingId})}" class="btn btn-outline-secondary">CLEAR </a>
         </div>
       </form>
       <!-- / Filtri di ricerca -->
@@ -235,12 +243,11 @@
         <ul class="pagination align-items-center">
 
           <li class="page-item" th:classappend="${!hasPrevious} ? 'disabled'">
-            <a class="page-link"
-               th:if="${hasPrevious}"
-               th:href="@{/checksall(loadingId=${loadingId}, page=${currentPage - 1},
-               billingAccountNumber=${billingAccountNumber}, siteConnectivityId=${siteConnectivityId},
-               entitlementGb=${entitlementGb}, usageGb=${usageGb})}">
-               PREVIOUS
+            <a class="page-link" th:href="@{/checksall(loadingId=${loadingId}, page=${currentPage - 1},
+            billingAccountNumber=${billingAccountNumber}, siteConnectivityId=${siteConnectivityId},
+            entitlementGb=${entitlementGb}, entitlementOperator=${entitlementOperator},
+            entitlementInclusive=${entitlementInclusive}, usageGb=${usageGb}, usageOperator=${usageOperator},
+            usageInclusive=${usageInclusive})}">
             </a>
             <span class="page-link" th:unless="${hasPrevious}">PREVIOUS</span>
           </li>
@@ -253,12 +260,11 @@
           </li>
 
           <li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
-            <a class="page-link"
-               th:if="${hasNext}"
-               th:href="@{/checksall(loadingId=${loadingId}, page=${currentPage + 1},
-               billingAccountNumber=${billingAccountNumber}, siteConnectivityId=${siteConnectivityId},
-               entitlementGb=${entitlementGb}, usageGb=${usageGb})}">
-               NEXT
+            <a class="page-link" th:href="@{/checksall(loadingId=${loadingId}, page=${currentPage + 1},
+            billingAccountNumber=${billingAccountNumber}, siteConnectivityId=${siteConnectivityId},
+            entitlementGb=${entitlementGb}, entitlementOperator=${entitlementOperator},
+            entitlementInclusive=${entitlementInclusive}, usageGb=${usageGb}, usageOperator=${usageOperator},
+            usageInclusive=${usageInclusive})}">
             </a>
             <span class="page-link" th:unless="${hasNext}">NEXT</span>
           </li>
