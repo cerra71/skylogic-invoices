@@ -58,9 +58,11 @@
                 <label class="form-label fw-bold" for="rowNumber">Row number</label>
                 <input class="form-control" id="rowNumber" name="rowNumber" th:value="${rowNumber}">
             </div>
-<!--            <button type="submit" class="btn btn-primary">LOAD ROW</button>-->
+
+            <!-- Buttons -->
             <button type="submit" class="btn btn-primary" th:formaction="@{/moveRowToStaging}" formmethod="post" th:disabled="${pushBackEnabled != true}">PUSH BACK TO STAGING</button>
-<!--            <button type="submit" class="btn btn-primary" th:formaction="@{/checkRow}" formmethod="post" th:disabled="${checkEnabled != true}">START CHECKING ROW</button>-->
+            <a th:href="@{/checksall(loadingId=${loadingId})}" class="btn btn-primary" th:if="${loadingId != null and !#strings.isEmpty(loadingId)}">BACK TO CSV RAW</a>
+            <button type="submit" class="btn btn-primary" th:formaction="@{/checkRow}" formmethod="post" th:disabled="${checkEnabled != true}">START CHECKING ROW</button>
 
         </form>
 
