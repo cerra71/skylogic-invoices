@@ -1,15 +1,20 @@
 package com.skylogic.invoice.controller;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.skylogic.invoice.check.CheckI;
+import com.skylogic.invoice.dto.FileCheckSummaryDTO;
 import com.skylogic.invoice.dto.InvoiceCheckResultDTO;
 import com.skylogic.invoice.dto.InvoiceStDTO;
 import com.skylogic.invoice.service.CheckService;
@@ -90,24 +95,96 @@ public class CheckController extends GenericController {
 		return "details"; // templates/home.html
 	}
 
-	/**
-     * Effettua il check dell'intero file
+    /**
+     * Effettua il check dell'intero file a partire dalla pagina HOME (lista
+     * loading). Esegue i controlli su TUTTE le righe ancora presenti in
+     * invoice_st per il loadingId selezionato e al termine ritorna alla home
+     * per aggiornare i totali della tabella.
      *
-     * @return il nome della view {@code details}
+     * @return redirect verso {@code /home}
+     */
+    @PostMapping("/checkFileLoading")
+    public String checkFileLoading(@RequestParam(name = "loadingId", required = true) String loadingId,
+                                   RedirectAttributes redirectAttributes) {
+
+        log.info("checkFileLoading - START - loadingId: {}", loadingId);
+
+        FileCheckSummaryDTO summary = checkService.checkFile(loadingId, checks);
+
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                String.format(
+                        "Check file %s completed: checked %d rows (%d passed, %d failed). " +
+                                "Already moved to invoice: %d. Duration: %.2f s",
+                        loadingId,
+                        summary.getRowsChecked(),
+                        summary.getRowsPassed(),
+                        summary.getRowsFailed(),
+                        summary.getRowsAlreadyMoved(),
+                        summary.getDurationMs() / 1000.0
+                )
+        );
+
+        log.info(
+                "checkFileLoading - END - loadingId: {}, checked: {}, passed: {}, failed: {}, alreadyMoved: {}",
+                loadingId, summary.getRowsChecked(), summary.getRowsPassed(),
+                summary.getRowsFailed(), summary.getRowsAlreadyMoved()
+        );
+
+        return "redirect:/home";
+    }
+
+	/**
+     * Effettua il check dell'intero file dalla pagina LOADING RAW (/checksall).
+     * Non richiede rowNumber.
+     *
+     * @return il nome della view {@code checksall} con il summary e la tabella
+     *         dei controlli falliti per ogni riga.
      */
     @PostMapping("/checkFile")
 	public String checkFile(@RequestParam(name = "loadingId", required = true) String loadingId,
-			                 @RequestParam(name = "rowNumber", required = true) Integer rowNumber,
-		                     Model model) {
+		                    Model model) {
 
-		model.addAttribute("loadingId", loadingId);
-		model.addAttribute("rowNumber", rowNumber);
+        log.info("checkFile - START from loading raw page: loadingId: {}", loadingId);
 
-		// Div di dettaglio: mostra solo il riepilogo del file
-		model.addAttribute("showRowDetails", false);
-		model.addAttribute("showFileDetails", true);
+        FileCheckSummaryDTO summary = checkService.checkFile(loadingId, checks);
 
-		return "details"; // templates/home.html
+        model.addAttribute("loadingId", loadingId);
+        model.addAttribute("fileSummary", summary);
+
+        // Lista ordinata per ROW NUMBER dei check falliti per ogni riga
+        List<Map.Entry<Integer, List<String>>> failedRows = new ArrayList<>(summary.getRowFailedChecks().entrySet());
+        failedRows.sort(Map.Entry.comparingByKey());
+        model.addAttribute("failedRows", failedRows);
+
+        // Ricostruisce la tabella rows (prima pagina, senza filtri) per mostrare
+        // in contemporanea i campi del file con le nuove info di check
+        Page<InvoiceStDTO> rowsPage = guiService.searchInvoiceStRows(
+                loadingId, "", "", "", "EQ", false, "", "EQ", false, 0
+        );
+        model.addAttribute("rows", rowsPage.getContent());
+        model.addAttribute("currentPage", rowsPage.getNumber());
+        model.addAttribute("totalPages", rowsPage.getTotalPages());
+        model.addAttribute("totalRows", rowsPage.getTotalElements());
+        model.addAttribute("hasPrevious", rowsPage.hasPrevious());
+        model.addAttribute("hasNext", rowsPage.hasNext());
+
+        model.addAttribute("billingAccountNumber", "");
+        model.addAttribute("siteConnectivityId", "");
+        model.addAttribute("entitlementGb", "");
+        model.addAttribute("usageGb", "");
+        model.addAttribute("entitlementOperator", "EQ");
+        model.addAttribute("entitlementInclusive", false);
+        model.addAttribute("usageOperator", "EQ");
+        model.addAttribute("usageInclusive", false);
+
+        log.info(
+                "checkFile - END: loadingId: {}, rows: {}, passed: {}, failed: {}, failures: {}",
+                loadingId, summary.getRowsChecked(), summary.getRowsPassed(),
+                summary.getRowsFailed(), failedRows.size()
+        );
+
+		return "checksall";
 	}
 
 	/**
@@ -117,7 +194,7 @@ public class CheckController extends GenericController {
      */
     @PostMapping("/exportComparisonExcel")
 	public String exportComparisonExcel(@RequestParam(name = "loadingId", required = true) String loadingId,
-			                             @RequestParam(name = "rowNumber", required = true) Integer rowNumber,
+			                             @RequestParam(name = "rowNumber", required = false, defaultValue = "1") Integer rowNumber,
 		                                 Model model) {
 
 		model.addAttribute("loadingId", loadingId);
@@ -137,7 +214,7 @@ public class CheckController extends GenericController {
      */
     @PostMapping("/exportObservationExcel")
 	public String exportObservationExcel(@RequestParam(name = "loadingId", required = true) String loadingId,
-			                              @RequestParam(name = "rowNumber", required = true) Integer rowNumber,
+			                              @RequestParam(name = "rowNumber", required = false, defaultValue = "1") Integer rowNumber,
 		                                  Model model) {
 
 		model.addAttribute("loadingId", loadingId);

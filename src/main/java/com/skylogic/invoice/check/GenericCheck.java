@@ -27,6 +27,16 @@ public abstract class GenericCheck {
 	protected boolean passed = false;
 	
 	public abstract InvoiceCheckResultDTO check(InvoiceStDTO row);
+
+	/**
+	 * Restituisce la SQL parametrica usata da questo controllo per la singola riga.
+	 * La query deve:
+	 *   - usare i parametri nominali :loadingId e :rowNumber
+	 *   - proiettare una colonna "result" con valori "Passed" / "Fail"
+	 *   - riferirsi alla riga singola (WHERE loading_id = :loadingId AND row_num = :rowNumber)
+	 * (Implementata in modo nativo da ciascun check; serve per il batch-checking.)
+	 */
+	public abstract String getSql();
 	
 	protected InvoiceCheckResultDTO createCheckResult(FieldEnum field, String fieldValue) {
 

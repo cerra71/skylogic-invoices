@@ -89,4 +89,9 @@ public class RaQa02InvoiceDateBillRunCheck extends GenericCheck implements Check
 
 		return createCheckResult(getField(), fieldValue);
 	}
+
+	@Override
+	public String getSql() {
+		return SQL;
+	}
 }

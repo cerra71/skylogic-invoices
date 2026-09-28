@@ -83,6 +83,19 @@
 
           document.addEventListener('DOMContentLoaded', refreshWidth);
           window.addEventListener('resize', refreshWidth);
+
+          // Spinner per START CHECKING FILE (evita doppi click)
+          const checkFileForm = document.getElementById('checkFileForm');
+          if (checkFileForm) {
+            checkFileForm.addEventListener('submit', function () {
+              const btn = document.getElementById('startCheckFileBtn');
+              const spinner = document.getElementById('checkFileSpinner');
+              const label = document.getElementById('checkFileBtnLabel');
+              if (btn) btn.disabled = true;
+              if (spinner) spinner.classList.remove('d-none');
+              if (label) label.textContent = 'Checking file...';
+            });
+          }
         })();
       </script>
 
@@ -111,20 +124,90 @@
       <!-- Pulsanti -->
       <div class="d-flex flex-wrap justify-content-end gap-3 mt-4 mb-3" id="fileButtons">
 
-        <button type="button" class="btn btn-danger">
-          START CHECKING FILE
-        </button>
+        <form method="post" th:action="@{/checkFile}" id="checkFileForm">
+          <input type="hidden" name="loadingId" th:value="${loadingId}">
+          <button type="submit"
+                  class="btn btn-danger"
+                  id="startCheckFileBtn">
+            <span id="checkFileSpinner"
+                  class="spinner-border spinner-border-sm d-none me-1"
+                  aria-hidden="true"></span>
+            <span id="checkFileBtnLabel">START CHECKING FILE</span>
+          </button>
+        </form>
 
-        <button type="button" class="btn btn-danger">
-          EXPORT COMPARISON EXCEL
-        </button>
+        <form method="post" th:action="@{/exportComparisonExcel}">
+          <input type="hidden" name="loadingId" th:value="${loadingId}">
+          <input type="hidden" name="rowNumber" value="1">
+          <button type="submit" class="btn btn-danger">
+            EXPORT COMPARISON EXCEL
+          </button>
+        </form>
 
-        <button type="button" class="btn btn-danger">
-          EXPORT QA TRACKER EXCEL
-        </button>
+        <form method="post" th:action="@{/exportObservationExcel}">
+          <input type="hidden" name="loadingId" th:value="${loadingId}">
+          <input type="hidden" name="rowNumber" value="1">
+          <button type="submit" class="btn btn-danger">
+            EXPORT QA TRACKER EXCEL
+          </button>
+        </form>
 
       </div>
       <!-- / Pulsanti -->
+
+      <!-- Alert summary dopo check file -->
+      <div class="alert alert-info mb-3 alert-dismissible fade show" role="alert"
+           th:if="${fileSummary != null and fileSummary.executed}">
+        <strong>Check file completato.</strong>
+        <span>Checked: <span class="fw-bold" th:text="${fileSummary.rowsChecked}"></span></span>
+        <span class="mx-2">|</span>
+        <span class="text-success">Passed: <span class="fw-bold" th:text="${fileSummary.rowsPassed}"></span></span>
+        <span class="mx-2">|</span>
+        <span class="text-danger">Failed: <span class="fw-bold" th:text="${fileSummary.rowsFailed}"></span></span>
+        <span class="mx-2">|</span>
+        <span>Already moved to invoice: <span class="fw-bold" th:text="${fileSummary.rowsAlreadyMoved}"></span></span>
+        <span class="mx-2">|</span>
+        <span>Duration: <span class="fw-bold" th:text="${#numbers.formatDecimal(fileSummary.durationMs / 1000.0, 1, 2) + ' s'}"></span></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+      <!-- Tabella risultati CHECK FILE (stessa struttura del check della singola riga in details - SENZA banner giallo) -->
+      <div class="card mb-4 border-0"
+           th:if="${fileSummary != null and fileSummary.executed and #lists.isEmpty(fileSummary.fileLevelResults) == false}">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+              <colgroup>
+                <col style="width: 25%;">
+                <col style="width: 30%;">
+                <col style="width: 45%;">
+              </colgroup>
+              <thead class="table-primary">
+              <tr>
+                <th>FIELD NAME</th>
+                <th>FIELD VALUE (riepilogo file)</th>
+                <th>CHECK RESULT</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="field : ${fileSummary.fileLevelResults}">
+                <th class="table-primary" th:text="${field.fieldName}"></th>
+                <td th:text="${field.fieldValue}"></td>
+                <td>
+                  <span th:if="${field.passed != null and field.passed}"
+                        class="text-success fw-bold"
+                        th:text="'Passed: ' + ${field.checkFailed}"></span>
+                  <span th:if="${field.passed != null and !field.passed}"
+                        class="text-danger fw-bold"
+                        th:text="'Failed: ' + ${field.checkFailed}"></span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- / Tabella risultati file -->
 
       <div class="alert alert-danger" role="alert" th:if="${filterError != null}" th:text="${filterError}"> </div>
 
@@ -341,42 +424,53 @@
       <!-- / Tabella CSV -->
 
 
-      <!--      <div class="card mb-4 border-0" id="fileDetails" th:if="${showFileDetails == true}">-->
-      <!--        <div class="card-body">-->
-      <!--          <div class="table-responsive">-->
-      <!--            <table class="table table-bordered table-hover align-middle">-->
-      <!--              <colgroup>-->
-      <!--                <col style="width: 20%;">-->
-      <!--                <col style="width: 80%;">-->
-      <!--              </colgroup>-->
-      <!--              <thead class="table-primary">-->
-      <!--              <tr>-->
-      <!--                <th>ROW NUMBER</th>-->
-      <!--                <th>FAILED CHECK</th>-->
-      <!--              </tr>-->
-      <!--              </thead>-->
-      <!--              <tbody>-->
-      <!--              <tr>-->
-      <!--                <td class="fw-bold">1</td>-->
-      <!--                <td class="fw-bold text-danger">RA-QA-01 - RA-QA-93 - RA-QA-04</td>-->
-      <!--              </tr>-->
-      <!--              <tr>-->
-      <!--                <td class="fw-bold">12</td>-->
-      <!--                <td class="fw-bold text-danger">RA-QA-04</td>-->
-      <!--              </tr>-->
-      <!--              <tr>-->
-      <!--                <td class="fw-bold">134</td>-->
-      <!--                <td class="fw-bold text-danger">RA-QA-01 - RA-QA-04</td>-->
-      <!--              </tr>-->
-      <!--              <tr>-->
-      <!--                <td class="fw-bold">156</td>-->
-      <!--                <td class="fw-bold text-danger">RA-QA-01 - RA-QA-93 - RA-QA-04</td>-->
-      <!--              </tr>-->
-      <!--              </tbody>-->
-      <!--            </table>-->
-      <!--          </div>-->
-      <!--        </div>-->
-      <!--      </div>-->
+      <!-- Tabella esiti check file: ROW NUMBER + FAILED CHECK (CODICI CONTROLLO) -->
+      <div class="card mb-4 border-0" id="fileDetails"
+           th:if="${failedRows != null and not #lists.isEmpty(failedRows)}">
+        <div class="card-header bg-danger-subtle text-danger fw-bold border border-danger border-bottom-0">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          CHECK RESULTS - FAILED ROWS
+        </div>
+        <div class="card-body pt-0">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+              <colgroup>
+                <col style="width: 20%;">
+                <col style="width: 80%;">
+              </colgroup>
+              <thead class="table-primary">
+              <tr>
+                <th>ROW NUMBER</th>
+                <th>FAILED CHECK</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="failedRow : ${failedRows}">
+                <td class="fw-bold">
+                  <a th:href="@{/loadRow(loadingId=${loadingId}, rowNumber=${failedRow.key})}"
+                     class="text-decoration-none"
+                     th:text="${failedRow.key}"
+                     title="Apri la riga nella pagina details (con campi già caricati)"></a>
+                </td>
+                <td class="fw-bold text-danger">
+                  <span th:each="cid, stat : ${failedRow.value}">
+                    <span th:text="${cid}"></span>
+                    <span th:if="${!stat.last}" class="mx-1">-</span>
+                  </span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messaggio quando il check è eseguito ma non ci sono righe fallite -->
+      <div class="alert alert-success mb-3" role="alert"
+           th:if="${fileSummary != null and fileSummary.executed and (failedRows == null or #lists.isEmpty(failedRows))}">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        Nessuna riga con controlli falliti per questo file.
+      </div>
 
     </th:block>
   </body>

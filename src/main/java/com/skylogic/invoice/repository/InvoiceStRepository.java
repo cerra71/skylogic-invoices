@@ -46,6 +46,16 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
     List<InvoiceSt> findByLoadingIdOrderByRowNumAsc(String loadingId);
 
     /**
+     * Conta il numero di righe in invoice_st per un determinato loading_id
+     * usando una query nativa (più sicura con @IdClass composito).
+     *
+     * @param loadingId identificativo del caricamento
+     * @return conteggio righe invoice_st per il loading selezionato
+     */
+    @Query(value = "SELECT COUNT(*) FROM public.invoice_st WHERE loading_id = :loadingId", nativeQuery = true)
+    long countByLoadingId(@Param("loadingId") String loadingId);
+
+    /**
      * Elimina tutte le righe di staging associate a un dato loading_id.
      */
     @Modifying

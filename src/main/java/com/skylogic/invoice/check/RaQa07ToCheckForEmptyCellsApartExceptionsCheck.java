@@ -94,4 +94,9 @@ public class RaQa07ToCheckForEmptyCellsApartExceptionsCheck extends GenericCheck
         // Crea il FieldDTO con il risultato del check
         return createCheckResult(getField(), fieldValue);
     }
+
+    @Override
+    public String getSql() {
+        return SQL;
+    }
 }

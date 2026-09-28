@@ -79,4 +79,9 @@ public class RaQa93CurrencyOnlyUsdCheck extends GenericCheck implements CheckI {
 
 		return createCheckResult(getField(), fieldValue);
 	}
+
+	@Override
+	public String getSql() {
+		return SQL;
+	}
 }

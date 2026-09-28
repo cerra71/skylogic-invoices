@@ -85,4 +85,9 @@ public class RaQa04EndCustomerIdNotPresentWhenThereIsSiteConnectivityIdCheck ext
         // Crea il FieldDTO con il risultato del check
         return createCheckResult(getField(), fieldValue);
     }
+
+    @Override
+    public String getSql() {
+        return SQL;
+    }
 }

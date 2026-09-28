@@ -99,4 +99,9 @@ public class RaQa01InvoiceNumberCheck extends GenericCheck implements CheckI {
     	// Crea il FieldDTO con il risultato del check
     	return createCheckResult(getField(), fieldValue);
     }
+
+	@Override
+	public String getSql() {
+		return SQL;
+	}
 }
