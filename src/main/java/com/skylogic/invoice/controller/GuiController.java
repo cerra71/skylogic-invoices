@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -323,18 +324,27 @@ public class GuiController extends GenericController {
         return "details";
     }
 
-
-
     /**
-     * Mostra la pagina di controllo di tutte le righe della invoice_st
-     *
-     * @return il nome della view {@code details}
+     * Mostra una pagina di 1000 righe della tabella invoice_st
      */
     @GetMapping("/checksall")
-    public String checksAll(@RequestParam("loadingId") String loadingId, Model model) {
+    public String checksAll(
+            @RequestParam("loadingId") String loadingId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            Model model) {
+
+        Page<InvoiceStDTO> result =
+                guiService.loadInvoiceStRows(loadingId, page);
+
         model.addAttribute("loadingId", loadingId);
-        model.addAttribute("rows", guiService.loadInvoiceStRows(loadingId));
-        return "checksall";  // templates/cheksall.html
+        model.addAttribute("rows", result.getContent());
+        model.addAttribute("currentPage", result.getNumber());
+        model.addAttribute("totalPages", result.getTotalPages());
+        model.addAttribute("totalRows", result.getTotalElements());
+        model.addAttribute("hasPrevious", result.hasPrevious());
+        model.addAttribute("hasNext", result.hasNext());
+
+        return "checksall"; // templates/checksall.html
     }
 }
 

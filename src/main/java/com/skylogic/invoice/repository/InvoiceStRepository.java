@@ -21,6 +21,9 @@ import com.skylogic.invoice.dto.LoadingSummaryInterface;
 import com.skylogic.invoice.entity.InvoiceRowId;
 import com.skylogic.invoice.entity.InvoiceSt;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @Repository
 public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRowId> {
 
@@ -50,6 +53,19 @@ public interface InvoiceStRepository extends JpaRepository<InvoiceSt, InvoiceRow
     @Query(value = "DELETE FROM public.invoice_st WHERE loading_id = :loadingId", nativeQuery = true)
     void deleteByLoadingId(@Param("loadingId") String loadingId);
 
+
+    /**
+     * Recupera una pagina delle righe di staging del loading selezionato,
+     * ordinate per numero di riga crescente.
+     *
+     * @param loadingId identificativo del CSV caricato
+     * @param pageable pagina richiesta e numero di righe per pagina
+     * @return righe della pagina e informazioni sul totale dei risultati
+     */
+    Page<InvoiceSt> findByLoadingIdOrderByRowNumAsc(
+            String loadingId,
+            Pageable pageable
+    );
 
 
 }

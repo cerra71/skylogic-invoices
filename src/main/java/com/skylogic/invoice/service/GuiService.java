@@ -10,6 +10,8 @@ import com.skylogic.invoice.mapper.InvoiceMapper;
 import com.skylogic.invoice.mapper.InvoiceStMapper;
 import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -119,7 +121,22 @@ public class GuiService {
 				.toList();
 	}
 
+	/**
+	 * Recupera una pagina di 1000 righe dalla invoice_st selezionata
+	 * convertendo le entity in DTO.
+	 *
+	 * @param loadingId identificativo del CSV caricato
+	 * @param page numero della pagina, a partire da zero
+	 * @return pagina di DTO con informazioni sul totale dei risultati
+	 */
+	public Page<InvoiceStDTO> loadInvoiceStRows(@NotBlank String loadingId,	int page) {
 
+		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
+
+		return invoiceStRepository
+				.findByLoadingIdOrderByRowNumAsc(loadingId, pageable)
+				.map(invoiceStMapper::toDTO);
+	}
 
 
 	/**
@@ -134,7 +151,6 @@ public class GuiService {
 
 		log.info("deleteLoading - END: loadingId: {}", loadingId);
 	}
-
 
 	// Sposta un record da InvoiceSt a Invoice
 	@Transactional
@@ -187,6 +203,7 @@ public class GuiService {
 
 		log.info("moveRowToStaging - END");
 	}
+
 
 
 }

@@ -146,13 +146,54 @@
       <div class="mb-3">
         <strong>LOADING ID:</strong> <span th:text="${loadingId}"></span>
         <span class="ms-3">
-          <strong>ROWS:</strong> <span th:text="${#lists.size(rows)}"></span>
+          <strong>TOTAL ROWS:</strong>
+            <span th:text="${totalRows}"></span>
         </span>
+
+        <span class="ms-3">
+          <strong>ROWS ON THIS PAGE:</strong>
+          <span th:text="${#lists.size(rows)}"></span>
+        </span>
+
       </div>
+      <!-- / Righe di invoice_st (RAW CSV) -->
 
       <div class="alert alert-info" th:if="${#lists.isEmpty(rows)}">
         Nessuna riga presente in invoice_st per questo loading.
       </div>
+
+      <!-- Pulsanti di navigazione delle pagine -->
+      <nav aria-label="Navigazione righe" th:if="${totalPages > 0}">
+        <ul class="pagination align-items-center">
+
+          <li class="page-item" th:classappend="${!hasPrevious} ? 'disabled'">
+            <a class="page-link"
+               th:if="${hasPrevious}"
+               th:href="@{/checksall(loadingId=${loadingId},page=${currentPage - 1})}">
+              PREVIOUS
+            </a>
+            <span class="page-link" th:unless="${hasPrevious}">PREVIOUS</span>
+          </li>
+
+          <li class="page-item">
+      <span class="page-link text-body">
+        PAGE <span th:text="${currentPage + 1}"></span>
+        OF <span th:text="${totalPages}"></span>
+      </span>
+          </li>
+
+          <li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
+            <a class="page-link"
+               th:if="${hasNext}"
+               th:href="@{/checksall(loadingId=${loadingId},page=${currentPage + 1})}">
+              NEXT
+            </a>
+            <span class="page-link" th:unless="${hasNext}">NEXT</span>
+          </li>
+
+        </ul>
+      </nav>
+      <!-- / Pulsanti di navigazione delle pagine -->
 
       <!-- Scrollbar orizzontale -->
       <div class="invoice-scroll-top" th:unless="${#lists.isEmpty(rows)}">
