@@ -41,9 +41,6 @@ public class Usage {
     @Column(name = "site_name", length = 4000)
     private String siteName;
 
-    @Column(name = "order_number", length = 4000)
-    private String orderNumber;
-
     @Column(name = "network_slice_id", length = 4000)
     private String networkSliceId;
 
