@@ -66,7 +66,7 @@ public class Usage {
     @Column(name = "date", length = 4000)
     private String date;
 
-    @Column(name = "ingest_time")
+    @Column(name = "ingest_time", length = 4000)
     private OffsetDateTime ingestTime;
 
     @Column(name = "source_filename", length = 4000)

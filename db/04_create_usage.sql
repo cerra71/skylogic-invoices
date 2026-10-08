@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.usage (
     network_slice_id            VARCHAR(4000),
     imsi                        VARCHAR(4000),
     additonal_imsi              VARCHAR(4000),
+    product_offering_id         VARCHAR(4000),
     type                        VARCHAR(4000),
     shared_pool_id              VARCHAR(4000),
     usage_gb                    VARCHAR(4000),
