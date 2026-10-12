@@ -110,4 +110,10 @@ public class Charges {
 
     @Column(name = "amount", length = 4000)
     private String amount;
+
+    @Column(name = "loading_id", insertable = false, updatable = false)
+    private Long loadingId;
+
+    @Column(name = "loading_time")
+    private LocalDateTime loadingTime;
 }
