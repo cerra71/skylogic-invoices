@@ -593,6 +593,7 @@ public class LoaderService {
                             .amount(getField(currentRow, headerMap, "amount"))
                             .loadingId(loadingId)
                             .loadingTime(loadingTime)
+                            .rowNum(currentRowNum)
                             .build();
 
                     batch.add(entity);
