@@ -39,6 +39,8 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static org.springframework.util.NumberUtils.parseNumber;
+
 @Service
 @Slf4j
 @Validated
@@ -573,12 +575,12 @@ public class LoaderService {
                             .type(getField(currentRow, headerMap, "type"))
                             .rate(getField(currentRow, headerMap, "rate"))
                             .qty(getField(currentRow, headerMap, "qty"))
-                            .startDate(parseLocalDateTime(getField(currentRow, headerMap, "start_date")))
-                            .endDate(parseLocalDateTime(getField(currentRow, headerMap, "end_date")))
+                            .startDate(getField(currentRow, headerMap, "start_date"))
+                            .endDate(getField(currentRow, headerMap, "end_date"))
                             .entitlementGb(getField(currentRow, headerMap, "entitlement_gb"))
                             .sharedPoolId(getField(currentRow, headerMap, "shared_pool_id"))
                             .usageGb(getField(currentRow, headerMap, "usage_gb"))
-                            .date(parseLocalDateTime(getField(currentRow, headerMap, "date")))
+                            .date(getField(currentRow, headerMap, "date"))
                             .currency(getField(currentRow, headerMap, "currency"))
                             .amount(getField(currentRow, headerMap, "amount"))
                             .loadingId(loadingId)
