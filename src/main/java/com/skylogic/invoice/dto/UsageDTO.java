@@ -29,4 +29,7 @@ public class UsageDTO {
     private String date;
     private OffsetDateTime ingestTime;
     private String sourceFilename;
+    private String loadingId;
+    private Long rowNum;
+    private LocalDateTime loadingTime;
 }

@@ -6,6 +6,8 @@ package com.skylogic.invoice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -71,5 +73,14 @@ public class Usage {
 
     @Column(name = "source_filename", length = 4000)
     private String sourceFilename;
+
+    @Column(name = "loading_id", length = 32)
+    private String loadingId;
+
+    @Column(name = "row_num")
+    private Long rowNum;
+
+    @Column(name = "loading_time")
+    private LocalDateTime loadingTime;
 }
 

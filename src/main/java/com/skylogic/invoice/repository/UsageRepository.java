@@ -38,8 +38,6 @@ public interface UsageRepository extends JpaRepository<Usage, UsageId> {
       AND (:siteConnectivityId = ''
            OR LOWER(i.siteConnectivityId)
               LIKE LOWER(CONCAT('%', :siteConnectivityId, '%')))
-      AND (:entitlementGb = ''
-           OR i.entitlementGb = :entitlementGb)
       AND (:usageGb = ''
            OR i.usageGb = :usageGb)
     ORDER BY i.rowNum ASC

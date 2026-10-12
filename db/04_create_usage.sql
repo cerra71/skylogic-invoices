@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS public.usage (
     date                        VARCHAR(4000),
     ingest_time                 TIMESTAMPTZ,
     source_filename             VARCHAR(4000)
+    loading_id                  VARCHAR(32),
+    row_num                     BIGINT,
+    loading_time                TIMESTAMP
 
     CONSTRAINT pk_usage
     PRIMARY KEY (billing_account_number, site_connectivity_id, date)
