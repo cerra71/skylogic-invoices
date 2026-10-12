@@ -42,7 +42,7 @@ public interface UsageRepository extends JpaRepository<Usage, UsageId> {
            OR i.usageGb = :usageGb)
     ORDER BY i.rowNum ASC
     """)
-    Page<InvoiceSt> searchInvoiceStRows(
+    Page<InvoiceSt> searchUsageRows(
             @Param("loadingId") String loadingId,
             @Param("billingAccountNumber") String billingAccountNumber,
             @Param("siteConnectivityId") String siteConnectivityId,

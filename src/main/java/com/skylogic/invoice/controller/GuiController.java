@@ -391,7 +391,131 @@ public class GuiController extends GenericController {
         model.addAttribute("usageOperator", usageOperator);
         model.addAttribute("usageInclusive", usageInclusive);
 
-        return "checksall";
+        return "checksall";  // templates/checksall.html
+    }
+
+
+    // Mostra le righe di charges con filtri facoltativi e paginazione da 1000 righe
+    @GetMapping("/checksCharges")
+    public String checksCharges(
+            @RequestParam("loadingId") String loadingId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "billingAccountNumber", defaultValue = "")
+            String billingAccountNumber,
+            @RequestParam(name = "siteConnectivityId", defaultValue = "")
+            String siteConnectivityId,
+            @RequestParam(name = "entitlementGb", defaultValue = "")
+            String entitlementGb,
+            @RequestParam(name = "entitlementOperator", defaultValue = "EQ")
+            String entitlementOperator,
+            @RequestParam(name = "entitlementInclusive", defaultValue = "false")
+            boolean entitlementInclusive,
+            @RequestParam(name = "usageGb", defaultValue = "")
+            String usageGb,
+            @RequestParam(name = "usageOperator", defaultValue = "EQ")
+            String usageOperator,
+            @RequestParam(name = "usageInclusive", defaultValue = "false")
+            boolean usageInclusive,
+            Model model) {
+
+        Page<ChargesDTO> result;
+
+        try {
+            result = guiService.searchChargesRows(
+                    loadingId,
+                    billingAccountNumber,
+                    siteConnectivityId,
+                    entitlementGb,
+                    entitlementOperator,
+                    entitlementInclusive,
+                    usageGb,
+                    usageOperator,
+                    usageInclusive,
+                    page
+            );
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("filterError", ex.getMessage());
+            result = Page.empty();
+        }
+
+        // Tabella e paginazione.
+        model.addAttribute("loadingId", loadingId);
+        model.addAttribute("rows", result.getContent());
+        model.addAttribute("currentPage", result.getNumber());
+        model.addAttribute("totalPages", result.getTotalPages());
+        model.addAttribute("totalRows", result.getTotalElements());
+        model.addAttribute("hasPrevious", result.hasPrevious());
+        model.addAttribute("hasNext", result.hasNext());
+
+        // Valori dei filtri.
+        model.addAttribute("billingAccountNumber", billingAccountNumber);
+        model.addAttribute("siteConnectivityId", siteConnectivityId);
+        model.addAttribute("entitlementGb", entitlementGb);
+        model.addAttribute("usageGb", usageGb);
+
+        // Operatori e checkbox.
+        model.addAttribute("entitlementOperator", entitlementOperator);
+        model.addAttribute("entitlementInclusive", entitlementInclusive);
+        model.addAttribute("usageOperator", usageOperator);
+        model.addAttribute("usageInclusive", usageInclusive);
+
+        return "checkscharges";  // templates/checkCharges.html
+    }
+
+
+     // Mostra le righe di usage con filtri facoltativi e paginazione da 1000 righe.
+    @GetMapping("/checksUsage")
+    public String checksUsage(
+            @RequestParam("loadingId") String loadingId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "billingAccountNumber", defaultValue = "")
+            String billingAccountNumber,
+            @RequestParam(name = "siteConnectivityId", defaultValue = "")
+            String siteConnectivityId,
+            @RequestParam(name = "usageGb", defaultValue = "")
+            String usageGb,
+            @RequestParam(name = "usageOperator", defaultValue = "EQ")
+            String usageOperator,
+            @RequestParam(name = "usageInclusive", defaultValue = "false")
+            boolean usageInclusive,
+            Model model) {
+
+        Page<UsageDTO> result;
+
+        try {
+            result = guiService.searchUsageRows(
+                    loadingId,
+                    billingAccountNumber,
+                    siteConnectivityId,
+                    usageGb,
+                    usageOperator,
+                    usageInclusive,
+                    page
+            );
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("filterError", ex.getMessage());
+            result = Page.empty();
+        }
+
+        // Tabella e paginazione.
+        model.addAttribute("loadingId", loadingId);
+        model.addAttribute("rows", result.getContent());
+        model.addAttribute("currentPage", result.getNumber());
+        model.addAttribute("totalPages", result.getTotalPages());
+        model.addAttribute("totalRows", result.getTotalElements());
+        model.addAttribute("hasPrevious", result.hasPrevious());
+        model.addAttribute("hasNext", result.hasNext());
+
+        // Valori dei filtri.
+        model.addAttribute("billingAccountNumber", billingAccountNumber);
+        model.addAttribute("siteConnectivityId", siteConnectivityId);
+        model.addAttribute("usageGb", usageGb);
+
+        // Operatori e checkbox.
+        model.addAttribute("usageOperator", usageOperator);
+        model.addAttribute("usageInclusive", usageInclusive);
+
+        return "checksusage";  // templates/checkUsage.html
     }
 }
 

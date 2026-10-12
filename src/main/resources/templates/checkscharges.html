@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org" th:replace="~{components/layout :: layout('Invoices - Checks Charges', ~{::content},
+     ~{::pageHead}, ~{})}">
+
+  <head>
+    <th:block th:fragment="pageHead">
+
+      <!-- CSS -->
+      <style>
+        .invoice-table-wrap {
+          width: 100%;
+          overflow-x: auto;
+        }
+
+        .invoice-table {
+          width: max-content;
+          min-width: 262.5rem;
+          white-space: nowrap;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+          padding: .5rem .75rem;
+        }
+
+        /* Testo rosso nella tabella esiti check file (vince sul colore di .table / .table-hover) */
+        #tableDetails td:not(:first-child) {
+          color: var(--bs-danger);
+        }
+
+        /* Filtri (xl): campi testo 1 parte, campi GB 2 parti, spaziatore 2 parti */
+        @media (min-width: 1200px) {
+          .row > .search-field-wide,
+          .row > .search-spacer {
+            flex-grow: 2;
+          }
+        }
+
+        .invoice-scroll-top {
+          width: 100%;
+          overflow-x: scroll;
+          overflow-y: hidden;
+          height: 1.5rem;
+          margin-bottom: .25rem;
+        }
+
+        .invoice-scroll-spacer {
+          width: 262.5rem;
+          height: .0625rem;
+        }
+      </style>
+
+      <!-- Javascript -->
+      <script>
+        (() => {
+          function updateWidth(topScroll, tableScroll) {
+            const spacer = topScroll.querySelector('.invoice-scroll-spacer');
+            const remSize = parseFloat(
+              getComputedStyle(document.documentElement).fontSize
+            );
+
+            spacer.style.width = (tableScroll.scrollWidth / remSize) + 'rem';
+          }
+
+          // Intercetta lo scorrimento anche degli elementi creati dopo lo script.
+          document.addEventListener('scroll', (event) => {
+            const element = event.target;
+            if (!(element instanceof Element)) return;
+
+            const topScroll = document.querySelector('.invoice-scroll-top');
+            const tableScroll = document.querySelector('.invoice-table-wrap');
+
+            if (!topScroll || !tableScroll) return;
+
+            if (element === topScroll) {
+              updateWidth(topScroll, tableScroll);
+
+              if (tableScroll.scrollLeft !== topScroll.scrollLeft) {
+                tableScroll.scrollLeft = topScroll.scrollLeft;
+              }
+            } else if (element === tableScroll) {
+              updateWidth(topScroll, tableScroll);
+
+              if (topScroll.scrollLeft !== tableScroll.scrollLeft) {
+                topScroll.scrollLeft = tableScroll.scrollLeft;
+              }
+            }
+          }, true);
+
+          function refreshWidth() {
+            const topScroll = document.querySelector('.invoice-scroll-top');
+            const tableScroll = document.querySelector('.invoice-table-wrap');
+
+            if (topScroll && tableScroll) {
+              updateWidth(topScroll, tableScroll);
+            }
+          }
+
+          document.addEventListener('DOMContentLoaded', refreshWidth);
+          window.addEventListener('resize', refreshWidth);
+
+          // Spinner per START CHECKING FILE (evita doppi click)
+          const checkFileForm = document.getElementById('checkFileForm');
+          if (checkFileForm) {
+            checkFileForm.addEventListener('submit', function () {
+              const btn = document.getElementById('startCheckFileBtn');
+              const spinner = document.getElementById('checkFileSpinner');
+              const label = document.getElementById('checkFileBtnLabel');
+              if (btn) btn.disabled = true;
+              if (spinner) spinner.classList.remove('d-none');
+              if (label) label.textContent = 'Checking file...';
+            });
+          }
+        })();
+      </script>
+
+    </th:block>
+  </head>
+
+  <body>
+  <th:block th:fragment="content">
+
+    <!-- Titolo pagina -->
+    <h2 class="text-center" style="margin-bottom: 3rem;">
+      <span class="d-inline-block px-4 py-2 border border-dark rounded fs-1">LOADING CHARGES</span>
+    </h2>
+    <!-- / Titolo pagina -->
+
+    <!-- Righe di charges (CHARGES CSV alias DETAILS) -->
+    <div class="mb-3">
+      <strong>LOADING ID:</strong> <span th:text="${loadingId}"></span>
+      <span class="ms-3">
+              <strong>TOTAL RESULTS:</strong>
+              <span th:text="${totalRows}"></span>
+      </span>
+    </div>
+    <!-- / Righe di charges (CHARGES CSV alias DETAILS) -->
+
+    <div class="alert alert-danger" role="alert" th:if="${filterError != null}" th:text="${filterError}"> </div>
+
+    <!-- Filtri di ricerca -->
+    <form th:action="@{/checkscharges}" method="get" class="mb-4">
+      <input type="hidden" name="loadingId" th:value="${loadingId}">
+      <input type="hidden" name="page" value="0">
+
+      <div class="row g-3">
+
+        <!-- Billing account number -->
+        <div class="col-12 col-md-4 col-xl-2">
+          <label for="billingAccountNumber" class="form-label">Billing Account Number</label>
+          <input type="text" id="billingAccountNumber" name="billingAccountNumber" class="form-control" th:value="${billingAccountNumber}">
+        </div>
+
+        <!-- Site Connectivity Id -->
+        <div class="col-12 col-md-4 col-xl-2">
+          <label for="siteConnectivityId" class="form-label">Site Connectivity ID</label>
+          <input type="text" id="siteConnectivityId" name="siteConnectivityId" class="form-control" th:value="${siteConnectivityId}">
+        </div>
+
+        <!-- Entitlement GB -->
+        <div class="col-12 col-md-6 col-xl search-field-wide">
+          <label for="entitlementGb" class="form-label">Entitlement GB</label>
+
+          <div class="input-group">
+            <select name="entitlementOperator" class="form-select">
+              <option value="EQ" th:selected="${entitlementOperator == null or entitlementOperator == 'EQ'}"> Uguale a </option>
+              <option value="GT" th:selected="${entitlementOperator == 'GT'}"> Maggiore di </option>
+              <option value="LT" th:selected="${entitlementOperator == 'LT'}">Minore di </option>
+            </select>
+
+            <input type="number" id="entitlementGb" name="entitlementGb" class="form-control" step="1" th:value="${entitlementGb}">
+          </div>
+
+          <div class="form-check mt-2">
+            <input type="checkbox" id="entitlementInclusive" name="entitlementInclusive" class="form-check-input" value="true" th:checked="${entitlementInclusive == true}">
+            <label for="entitlementInclusive" class="form-check-label"> Includi il limite (maggiore/minore)</label>
+          </div>
+
+        </div>
+
+        <!-- Usage GB -->
+        <div class="col-12 col-md-6 col-xl search-field-wide">
+          <label for="usageGb" class="form-label"> Usage GB </label>
+
+          <div class="input-group">
+            <select name="usageOperator" class="form-select">
+              <option value="EQ" th:selected="${usageOperator == null or usageOperator == 'EQ'}">Uguale a</option>
+              <option value="GT" th:selected="${usageOperator == 'GT'}">Maggiore di </option>
+              <option value="LT" th:selected="${usageOperator == 'LT'}">Minore di</option>
+            </select>
+
+            <input type="number" id="usageGb" name="usageGb" class="form-control" step="1" th:value="${usageGb}">
+
+          </div>
+
+          <div class="form-check mt-2">
+            <input type="checkbox" id="usageInclusive" name="usageInclusive" class="form-check-input" value="true" th:checked="${usageInclusive == true}">
+            <label for="usageInclusive" class="form-check-label">Includi il limite (maggiore/minore)</label>
+          </div>
+        </div>
+
+      </div>
+    </form>
+    <!-- / Filtri di ricerca -->
+
+    <!-- Avviso e Paginazione -->
+    <th:block th:if="${fileSummary == null}">
+
+      <div class="alert alert-info" th:if="${#lists.isEmpty(rows)}">
+        Nessuna riga trovata per questa tabella e i filtri selezionati.
+      </div>
+
+      <!-- Pulsanti di navigazione delle pagine -->
+      <nav aria-label="Navigazione righe" th:if="${totalPages > 0}">
+        <ul class="pagination align-items-center">
+
+          <li class="page-item" th:classappend="${!hasPrevious} ? 'disabled'">
+            <a class="page-link"
+               th:if="${hasPrevious}"
+               th:href="@{/checksall(
+                       loadingId=${loadingId},
+                       page=${currentPage - 1},
+                       billingAccountNumber=${billingAccountNumber},
+                       siteConnectivityId=${siteConnectivityId},
+                       entitlementGb=${entitlementGb},
+                       usageGb=${usageGb},
+                   )}">
+              PREVIOUS
+            </a>
+            <span class="page-link" th:unless="${hasPrevious}">PREVIOUS</span>
+          </li>
+
+          <li class="page-item">
+                <span class="page-link text-body">
+                  PAGE <span th:text="${currentPage + 1}"></span>
+                  OF <span th:text="${totalPages}"></span>
+                </span>
+          </li>
+
+          <li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
+            <a class="page-link"
+               th:if="${hasNext}"
+               th:href="@{/checksall(
+                       loadingId=${loadingId},
+                       page=${currentPage + 1},
+                       billingAccountNumber=${billingAccountNumber},
+                       siteConnectivityId=${siteConnectivityId},
+                       entitlementGb=${entitlementGb},
+                       usageGb=${usageGb}
+                   )}">
+              NEXT
+            </a>
+            <span class="page-link" th:unless="${hasNext}">NEXT</span>
+          </li>
+
+        </ul>
+      </nav>
+      <!-- / Pulsanti di navigazione delle pagine -->
+
+    </th:block>
+
+    <!-- Scrollbar orizzontale -->
+    <div class="invoice-scroll-top" th:unless="${#lists.isEmpty(rows)}">
+      <div class="invoice-scroll-spacer"></div>
+    </div>
+    <!-- / Scrollbar orizzontale -->
+
+    <!-- Tabella CSV -->
+    <div class="invoice-table-wrap" th:if="${fileSummary == null and not #lists.isEmpty(rows)}" id="searchTable">
+      <table class="table table-bordered table-hover align-middle invoice-table">
+        <thead class="table-primary">
+        <tr>
+          <th>INVOICE NUMBER</th>
+          <th>INVOICE DATE</th>
+          <th>BILLING ACCOUNT NUMBER</th>
+          <th>BILLING ACCOUNT NAME</th>
+          <th>END CUSTOMER ID</th>
+          <th>END CUSTOMER NAME</th>
+          <th>SITE CONNECTIVITY ID</th>
+          <th>SITE NAME</th>
+          <th>ORDER NUMBER</th>
+          <th>PO REFERENCE</th>
+          <th>NETWORK SLICE ID</th>
+          <th>SERVICE ID</th>
+          <th>IMSI</th>
+          <th>ADDITIONAL IMSI</th>
+          <th>APN</th>
+          <th>PRODUCT IDENTIFIER</th>
+          <th>PRODUCT OFFERING ID</th>
+          <th>NAME</th>
+          <th>TYPE</th>
+          <th>RATE</th>
+          <th>QUANTITY</th>
+          <th>START DATE</th>
+          <th>END DATE</th>
+          <th>ENTITLEMENT GB</th>
+          <th>SHARED POOL ID</th>
+          <th>USAGE GB</th>
+          <th>DATE</th>
+          <th>CURRENCY</th>
+          <th>AMOUNT</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${rows}">
+          <td>
+            <a th:href="@{/loadRow(loadingId=${loadingId})}"></a>
+          </td>
+          <td th:text="${row.invoiceNumber}"></td>
+          <td th:text="${row.invoiceDate}"></td>
+          <td th:text="${row.billingAccountNumber}"></td>
+          <td th:text="${row.endCustomerId}"></td>
+          <td th:text="${row.endCustomerName}"></td>
+          <td th:text="${row.siteConnectivityId}"></td>
+          <td th:text="${row.siteName}"></td>
+          <td th:text="${row.orderNumber}"></td>
+          <td th:text="${row.poReference}"></td>
+          <td th:text="${row.networkSliceId}"></td>
+          <td th:text="${row.serviceId}"></td>
+          <td th:text="${row.imsi}"></td>
+          <td th:text="${row.additionalImsi}"></td>
+          <td th:text="${row.apn}"></td>
+          <td th:text="${row.productIdentifier}"></td>
+          <td th:text="${row.productOfferingId}"></td>
+          <td th:text="${row.name}"></td>
+          <td th:text="${row.type}"></td>
+          <td th:text="${row.rate}"></td>
+          <td th:text="${row.qty}"></td>
+          <td th:text="${row.startDate}"></td>
+          <td th:text="${row.endDate}"></td>
+          <td th:text="${row.entitlementGb}"></td>
+          <td th:text="${row.sharedPoolId}"></td>
+          <td th:text="${row.usageGb}"></td>
+          <td th:text="${row.date}"></td>
+          <td th:text="${row.currency}"></td>
+          <td th:text="${row.amount}"></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- / Tabella CSV -->
+
+  </th:block>
+  </body>
+</html>
+

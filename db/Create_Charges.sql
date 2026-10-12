@@ -1,5 +1,8 @@
-CREATE TABLE charges (
-    charges_pk SERIAL PRIMARY KEY,
+-- ============================================================
+-- CHARGES_MERGE TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.charges (
+    charges_pk BIGSERIAL PRIMARY KEY,
 
     invoice_number VARCHAR(4000),
     invoice_date DATE,
@@ -46,6 +49,7 @@ CREATE TABLE charges (
     currency VARCHAR(4000),
     amount VARCHAR(4000),
 
-    loading_id SERIAL,
+    row_num    BIGINT,
+    loading_id VARCHAR(32),
     loading_time TIMESTAMP
 );

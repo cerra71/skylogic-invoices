@@ -1,29 +1,18 @@
 package com.skylogic.invoice.service;
 
-
 import java.util.List;
 
+import com.skylogic.invoice.dto.*;
 import com.skylogic.invoice.entity.Invoice;
 import com.skylogic.invoice.entity.InvoiceRowId;
 import com.skylogic.invoice.entity.InvoiceSt;
-import com.skylogic.invoice.mapper.InvoiceMapper;
-import com.skylogic.invoice.mapper.InvoiceStMapper;
-import com.skylogic.invoice.mapper.InvoiceStToInvoiceMapper;
+import com.skylogic.invoice.mapper.*;
+import com.skylogic.invoice.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-
-import com.skylogic.invoice.dto.InvoiceDTO;
-import com.skylogic.invoice.dto.InvoiceStDTO;
-import com.skylogic.invoice.dto.LoadingSummaryDTO;
-import com.skylogic.invoice.dto.LoadingSummaryInterface;
-import com.skylogic.invoice.mapper.LoadingSummaryMapper;
-import com.skylogic.invoice.repository.InvoiceDiscardRepository;
-import com.skylogic.invoice.repository.InvoiceRepository;
-import com.skylogic.invoice.repository.InvoiceStRepository;
-import com.skylogic.invoice.repository.KpiDocumentationRepository;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -36,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class GuiService {
 
 	// Repository autowired
-
 	@Autowired
 	private InvoiceStRepository invoiceStRepository;
 
@@ -46,9 +34,6 @@ public class GuiService {
 	@Autowired
 	private InvoiceDiscardRepository invoiceDiscardRepository;
 
-	@Autowired
-	private KpiDocumentationRepository kpiDocumentationRepository;
-	
 	@Autowired
 	private LoadingSummaryMapper loadingSummaryMapper;
 
@@ -61,19 +46,33 @@ public class GuiService {
 	@Autowired
 	private InvoiceStToInvoiceMapper invoiceStToInvoiceMapper;
 
-	
+	// Charges e Usage
+	@Autowired
+	private ChargesRepository chargesRepository;
+
+	@Autowired
+	private UsageRepository usageRepository;
+
+	@Autowired
+	private ChargesMapper chargesMapper;
+
+	@Autowired
+	private UsageMapper usageMapper;
+
+
 	/**
 	 * Restituisce la lista dei caricamenti, aggregando invoice_st (per loading_id,
 	 * loading_time e conteggio righe) e invoice_discard (per conteggio righe scartate).
 	 * Ordinati per loading_time decrescente.
+	 *
 	 * @return lista di {@link LoadingSummaryDTO} con i riepiloghi dei caricamenti.
 	 */
-	 public List<LoadingSummaryDTO> getLoadings() {
+	public List<LoadingSummaryDTO> getLoadings() {
 		List<LoadingSummaryInterface> rows = invoiceStRepository.findLoadingSummaries();
 		log.info("getLoadings - Found {} loading summaries", rows.size());
 
 		List<LoadingSummaryDTO> result = loadingSummaryMapper.toDTOs(rows);
-		
+
 		for (LoadingSummaryDTO row : result)
 			row.setDiscardedRows(invoiceDiscardRepository.countByLoadingId(row.getLoadingId()));
 
@@ -95,7 +94,7 @@ public class GuiService {
 				.map(entity -> invoiceStMapper.toDTO(entity))
 				.orElse(null);
 	}
-	
+
 	public InvoiceDTO loadInvoiceRow(@NotBlank String loadingId, @NotNull Integer rowNumber) {
 
 		// Id da cercare nel db
@@ -121,15 +120,18 @@ public class GuiService {
 				.toList();
 	}
 
+
 	/**
-	 * Recupera una pagina di 1000 righe dalla invoice_st selezionata
+	 * Recupera una pagina di 1000 righe dalla invoice_st selezionata,
 	 * convertendo le entity in DTO.
 	 *
 	 * @param loadingId identificativo del CSV caricato
-	 * @param page numero della pagina, a partire da zero
+	 * @param page      numero della pagina, a partire da zero
 	 * @return pagina di DTO con informazioni sul totale dei risultati
 	 */
-	public Page<InvoiceStDTO> loadInvoiceStRows(@NotBlank String loadingId,	int page) {
+	public Page<InvoiceStDTO> loadInvoiceStRows(
+			@NotBlank String loadingId,
+			int page) {
 
 		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
 
@@ -156,10 +158,11 @@ public class GuiService {
 
 		String billingNorm = billingAccountNumber == null ? "" : billingAccountNumber.trim();
 		String siteNorm = siteConnectivityId == null ? "" : siteConnectivityId.trim();
+
 		Long entitlementValue = parseGbFilter(entitlementGb, "Entitlement GB");
 		Long usageValue = parseGbFilter(usageGb, "Usage GB");
 
-		// L'operatore serve soltanto quando è presente un valore.
+		// L'operatore serve soltanto quando è presente il relativo valore.
 		if (entitlementValue != null) {
 			validateGbOperator(entitlementOperator);
 		}
@@ -170,16 +173,9 @@ public class GuiService {
 
 		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
 
-		// --- FAST PATH ---
-		// Se TUTTI i filtri sono "vuoti"/default, non scomodiamo la query nativa
-		// CON parametri (che qualche volta da binding NULL strani e torna 0 righe).
-		// Usiamo invece la findByLoadingId semplice (stessa identica paginazione
-		// 1000 righe) — cosi' la ricerca default torna SEMPRE risultati corretti.
-		final boolean allFiltersEmpty =
-				billingNorm.isEmpty()
-						&& siteNorm.isEmpty()
-						&& entitlementValue == null
-						&& usageValue == null;
+		boolean allFiltersEmpty = billingNorm.isEmpty() && siteNorm.isEmpty() && entitlementValue == null && usageValue == null;
+
+		// Con tutti i filtri vuoti usa la query semplice.
 		if (allFiltersEmpty) {
 			return invoiceStRepository
 					.findByLoadingIdOrderByRowNumAsc(loadingId, pageable)
@@ -200,25 +196,21 @@ public class GuiService {
 		).map(invoiceStMapper::toDTO);
 	}
 
+
+	// --- METODI DI SUPPORTO PER I FILTRI NUMERICI ---
+
 	/**
-	 * Metodo di supporto: converte il filtro in un intero (Long) usato dal
-	 * repository. Un campo vuoto disattiva il filtro.
-	 * <p>
-	 * Accetta anche numeri decimali (punto o virgola come separatore): il valore
-	 * viene convertito in Long per compatibilita' con la firma del repository,
-	 * mentre la query SQL (tramite {@code CAST(:param AS NUMERIC)}) tratta
-	 * comunque il valore come numero a virgola mobile.
+	 * Converte il filtro in un Long usato dal repository.
+	 * Un campo vuoto disattiva il filtro.
+	 * Accetta il punto o la virgola come separatore decimale.
 	 */
 	private Long parseGbFilter(String value, String fieldName) {
 		if (value == null || value.isBlank()) {
 			return null;
 		}
 
-		String normalized = value.trim();
-		// Supporta sia il punto che la virgola come separatore decimale.
-		normalized = normalized.replace(',', '.');
+		String normalized = value.trim().replace(',', '.');
 
-		// Regex: intero oppure numero decimale (es. "81", "81.937825", "-3.14").
 		if (!normalized.matches("[+-]?[0-9]+(\\.[0-9]+)?")) {
 			throw new IllegalArgumentException(
 					fieldName + ": inserire un numero intero o decimale."
@@ -226,19 +218,18 @@ public class GuiService {
 		}
 
 		try {
-			// Il repository si aspetta un Long, ma poiche' nella query c'e'
-			// CAST(:param AS NUMERIC) possiamo tranquillamente passare la
-			// parte intera (troncata).
+			// La conversione in Long tronca la parte decimale.
 			return Double.valueOf(normalized).longValue();
 		} catch (NumberFormatException ex) {
 			throw new IllegalArgumentException(
-					fieldName + ": valore fuori dall'intervallo supportato."
+					fieldName + ": valore fuori dall'intervallo supportato.",
+					ex
 			);
 		}
 	}
 
 	/**
-	 * Metodo di supporto: accetta soltanto gli operatori previsti dal form.
+	 * Accetta soltanto gli operatori previsti dal form.
 	 */
 	private void validateGbOperator(String operator) {
 		if (!"EQ".equals(operator)
@@ -252,9 +243,7 @@ public class GuiService {
 	}
 
 
-	/**
-	 * Elimina tutte le righe di un loading (da invoice_st e invoice_discard).
-	 */
+	// Elimina tutte le righe di un loading da invoice_st e invoice_discard.
 	@Transactional
 	public void deleteLoading(@NotBlank String loadingId) {
 		log.info("deleteLoading - START: loadingId: {}", loadingId);
@@ -265,61 +254,178 @@ public class GuiService {
 		log.info("deleteLoading - END: loadingId: {}", loadingId);
 	}
 
-	// Sposta un record da InvoiceSt a Invoice
+	// Sposta un record da InvoiceSt a Invoice.
 	@Transactional
-	public void moveRowToInvoice(@NotBlank String loadingId,
-						         @NotNull Integer rowNumber,
-						         @NotNull InvoiceStDTO invoiceStDTO) {
+	public void moveRowToInvoice(
+			@NotBlank String loadingId,
+			@NotNull Integer rowNumber,
+			@NotNull InvoiceStDTO invoiceStDTO) {
 
-		log.info("moveRowToInvoice - START - loadingId: {}, rowNumber: {}, invoiceStDTO: {}", loadingId, rowNumber, invoiceStDTO);
+		log.info("moveRowToInvoice - START - loadingId: {}, rowNumber: {}, invoiceStDTO: {}",
+				loadingId, rowNumber, invoiceStDTO);
 
-		// 1. Conversione da InvoiceStDTO a InvoiceDTO
+
+		// Converte InvoiceStDTO in InvoiceDTO.
 		InvoiceDTO invoiceDTO = invoiceStToInvoiceMapper.toDTO(invoiceStDTO);
 
-		// 2. Conversione da InvoiceDTO a entity Invoice
+		// Converte InvoiceDTO nell'entity Invoice.
 		Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
 
-		// 3. Salvataggio del record nella tabella Invoice (loadingID e rowNumber già presenti)
+		// Salva il record nella tabella Invoice.
 		invoiceRepository.save(invoice);
 
-		// 4. Costruzione della chiave composta
+		// Costruisce la chiave composta del record originale.
 		InvoiceRowId id = new InvoiceRowId(loadingId, rowNumber.longValue());
 
-		// 5. Elimina il record da invoiceSt (tramite id ricostruito)
+		// Elimina il record da InvoiceSt.
 		invoiceStRepository.deleteById(id);
 
 		log.info("moveRowToInvoice - END");
 	}
 
-	// Sposta un record da Invoice a InvoiceSt
+
+	// Sposta un record da Invoice a InvoiceSt.
 	@Transactional
-	public void moveRowToStaging(@NotBlank String loadingId,
-								 @NotNull Integer rowNumber,
-								 @NotNull InvoiceDTO invoiceDTO) {
+	public void moveRowToStaging(
+			@NotBlank String loadingId,
+			@NotNull Integer rowNumber,
+			@NotNull InvoiceDTO invoiceDTO) {
 
-		log.info("moveRowToStaging - START - loadingId: {}, rowNumber: {}, invoiceDTO: {}", loadingId, rowNumber, invoiceDTO);
+		log.info("moveRowToStaging - START - loadingId: {}, rowNumber: {}, invoiceDTO: {}",
+				loadingId, rowNumber, invoiceDTO);
 
-		// 1. Conversione da InvoiceDTO a InvoiceStDTO
+
+		// Converte InvoiceDTO in InvoiceStDTO.
 		InvoiceStDTO invoiceStDTO = invoiceStToInvoiceMapper.toEntity(invoiceDTO);
 
-		// 2. Conversione da InvoiceStDTO a entity InvoiceSt
+		// Converte InvoiceStDTO nell'entity InvoiceSt.
 		InvoiceSt invoiceSt = invoiceStMapper.toEntity(invoiceStDTO);
 
-		// 3. Salvataggio del record nella tabella InvoiceSt
+		// Salva il record nella tabella InvoiceSt.
 		invoiceStRepository.save(invoiceSt);
 
-		// 4. Costruzione della chiave composta
+		// Costruisce la chiave composta del record originale.
 		InvoiceRowId id = new InvoiceRowId(loadingId, rowNumber.longValue());
 
-		// 5. Eliminazione del record da Invoice tramite la chiave
+		// Elimina il record da Invoice.
 		invoiceRepository.deleteById(id);
 
 		log.info("moveRowToStaging - END");
 	}
 
 
+	// --- SERVICE METODI TABELLA CHARGES ---
 
+	// Recupera una pagina di 1000 righe dalla tabella Charges.
+	public Page<ChargesDTO> loadChargesRows(@NotBlank String loadingId, int page) {
+
+		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
+
+		return chargesRepository
+				.findByLoadingIdOrderByRowNumAsc(loadingId, pageable)
+				.map(chargesMapper::toDTO);
+	}
+
+	// Cerca le righe della tabella Charges applicando filtri testuali e numerici.
+	public Page<ChargesDTO> searchChargesRows(
+			@NotBlank String loadingId,
+			String billingAccountNumber,
+			String siteConnectivityId,
+			String entitlementGb,
+			String entitlementOperator,
+			boolean entitlementInclusive,
+			String usageGb,
+			String usageOperator,
+			boolean usageInclusive,
+			int page) {
+
+		String billingNorm = billingAccountNumber == null ? "" : billingAccountNumber.trim();
+		String siteNorm = siteConnectivityId == null ? "" : siteConnectivityId.trim();
+
+		Long entitlementValue = parseGbFilter(entitlementGb, "Entitlement GB");
+		Long usageValue = parseGbFilter(usageGb, "Usage GB");
+
+		if (entitlementValue != null) {
+			validateGbOperator(entitlementOperator);
+		}
+
+		if (usageValue != null) {
+			validateGbOperator(usageOperator);
+		}
+
+		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
+
+		boolean allFiltersEmpty = billingNorm.isEmpty() && siteNorm.isEmpty() && entitlementValue == null && usageValue == null;
+
+		if (allFiltersEmpty) {
+			return chargesRepository
+					.findByLoadingIdOrderByRowNumAsc(loadingId, pageable)
+					.map(chargesMapper::toDTO);
+		}
+
+		return chargesRepository.searchChargesRowsNumeric(
+				loadingId,
+				billingNorm,
+				siteNorm,
+				entitlementValue,
+				entitlementOperator,
+				entitlementInclusive,
+				usageValue,
+				usageOperator,
+				usageInclusive,
+				pageable
+		).map(chargesMapper::toDTO);
+	}
+
+
+	// --- SERVICE METODI TABELLA USAGE ---
+
+	// Recupera una pagina di 1000 righe dalla tabella Usage.
+	public Page<UsageDTO> loadUsageRows(@NotBlank String loadingId, int page) {
+
+		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
+
+		return usageRepository
+				.findByLoadingIdOrderByRowNumAsc(loadingId, pageable)
+				.map(usageMapper::toDTO);
+	}
+
+	// Cerca le righe della tabella Usage applicando filtri testuali e il filtro numerico Usage GB.
+	public Page<UsageDTO> searchUsageRows(
+			@NotBlank String loadingId,
+			String billingAccountNumber,
+			String siteConnectivityId,
+			String usageGb,
+			String usageOperator,
+			boolean usageInclusive,
+			int page) {
+
+		String billingNorm = billingAccountNumber == null ? "" : billingAccountNumber.trim();
+		String siteNorm = siteConnectivityId == null ? "" : siteConnectivityId.trim();
+		Long usageValue = parseGbFilter(usageGb, "Usage GB");
+
+		if (usageValue != null) {
+			validateGbOperator(usageOperator);
+		}
+
+		PageRequest pageable = PageRequest.of(Math.max(page, 0), 1000);
+
+		boolean allFiltersEmpty = billingNorm.isEmpty() && siteNorm.isEmpty() && usageValue == null;
+
+		if (allFiltersEmpty) {
+			return usageRepository
+					.findByLoadingIdOrderByRowNumAsc(loadingId, pageable)
+					.map(usageMapper::toDTO);
+		}
+
+		return usageRepository.searchUsageRowsNumeric(
+				loadingId,
+				billingNorm,
+				siteNorm,
+				usageValue,
+				usageOperator,
+				usageInclusive,
+				pageable
+		).map(usageMapper::toDTO);
+	}
 }
-
-
-

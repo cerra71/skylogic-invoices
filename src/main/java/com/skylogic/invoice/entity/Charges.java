@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -88,10 +89,10 @@ public class Charges {
     private String qty;
 
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    private String startDate;
 
     @Column(name = "end_date")
-    private LocalDateTime endDate;
+    private String endDate;
 
     @Column(name = "entitlement_gb", length = 4000)
     private String entitlementGb;
@@ -103,7 +104,7 @@ public class Charges {
     private String usageGb;
 
     @Column(name = "date")
-    private LocalDateTime date;
+    private String date;
 
     @Column(name = "currency", length = 4000)
     private String currency;
@@ -111,9 +112,12 @@ public class Charges {
     @Column(name = "amount", length = 4000)
     private String amount;
 
-    @Column(name = "loading_id", insertable = false, updatable = false)
-    private Long loadingId;
+    @Column(name = "loading_id", length = 32, nullable = false)
+    private String loadingId;
 
     @Column(name = "loading_time")
     private LocalDateTime loadingTime;
+
+    @Column(name = "row_num")
+    private Long rowNum;
 }

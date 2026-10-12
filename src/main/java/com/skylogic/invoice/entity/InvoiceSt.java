@@ -117,7 +117,7 @@ public class InvoiceSt implements Persistable<InvoiceRowId> {
     private String amount;
 
     @Id
-    @Column(name = "loading_id", length = 32)
+    @Column(name = "loading_id", length = 32, nullable = false)
     private String loadingId;
 
     @Id

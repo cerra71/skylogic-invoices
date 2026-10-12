@@ -49,7 +49,7 @@ public class Usage {
     @Column(name = "imsi", length = 4000)
     private String imsi;
 
-    @Column(name = "additional_imsi", length = 4000)
+    @Column(name = "additonal_imsi", length = 4000)
     private String additionalImsi;
 
     @Column(name = "product_offering_id", length = 4000)
