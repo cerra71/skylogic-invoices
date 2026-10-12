@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -205,6 +206,7 @@ public class LoaderService {
      * con il messaggio di errore (troncato a 4000 caratteri).
      * Tutti i record del caricamento condividono lo stesso loading_id e loading_time.
      */
+    @Transactional(rollbackFor = Exception.class)
     public void loadCsv(MultipartFile file) {
         log.info("loadCsv - START: file: {}", file.getOriginalFilename());
 
@@ -241,6 +243,7 @@ public class LoaderService {
      *   <li>dimensione massima decompressa totale dello ZIP: {@link #MAX_TOTAL_SIZE}</li>
      * </ul>
      */
+    @Transactional(rollbackFor = Exception.class)
     public void loadZip(MultipartFile file) {
         log.info("loadZip - START: file: {}", file.getOriginalFilename());
 
@@ -251,6 +254,7 @@ public class LoaderService {
 
         long totale = 0;
         int count = 0;
+        String currentEntry = null;
 
         try (ZipInputStream zis = new ZipInputStream(file.getInputStream(), Charset.forName(csvEncoding))) {
             ZipEntry entry;
@@ -264,12 +268,13 @@ public class LoaderService {
                 }
 
                 String entryName = entry.getName();
+                currentEntry = entryName;
                 log.info("loadZip - entry: {}", entryName);
 
                 if (entryName == null || !entryName.toLowerCase(Locale.ROOT).endsWith(".csv")) {
-                    log.info("loadZip - salto entry non-CSV: {}", entryName);
-                    zis.closeEntry();
-                    continue;
+                    log.error("loadZip - Entry non valida (non CSV): '{}'. Caricamento abortito.", entryName);
+                    throw new ZipNonValidoException(
+                            "File non supportato nell'archivio ZIP (sono ammessi solo file .csv): " + entryName);
                 }
 
                 LimitedInputStream limitato = new LimitedInputStream(zis, MAX_ENTRY_SIZE, entryName);
@@ -289,12 +294,15 @@ public class LoaderService {
                 }
 
                 zis.closeEntry();
+                currentEntry = null;
             }
         } catch (ZipNonValidoException e) {
+            log.error("loadZip - ZIP non valido durante l'elaborazione di '{}': {}", currentEntry, e.getMessage());
             throw e;
         } catch (Exception e) {
-            log.error("loadZip - Errore fatale nella lettura dello zip: {}", file.getOriginalFilename(), e);
-            throw new RuntimeException("Errore nel caricamento del file ZIP: " + e.getMessage(), e);
+            log.error("loadZip - File rifiutato: '{}'. Caricamento ZIP abortito: {}", currentEntry, e.getMessage(), e);
+            throw new RuntimeException("Errore nel caricamento del file ZIP. File rifiutato: " + currentEntry
+                    + " - " + e.getMessage(), e);
         }
 
         log.info("loadZip - END: {} entry processate, loadingId: {}", count, loadingId);
