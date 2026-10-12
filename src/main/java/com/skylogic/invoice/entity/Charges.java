@@ -115,6 +115,7 @@ public class Charges {
     @Column(name = "loading_id", length = 32, nullable = false)
     private String loadingId;
 
+
     @Column(name = "loading_time")
     private LocalDateTime loadingTime;
 

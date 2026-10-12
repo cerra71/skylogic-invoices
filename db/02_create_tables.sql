@@ -117,7 +117,11 @@ CREATE TABLE IF NOT EXISTS public.invoice_discard (
     row_num                     BIGINT,
     discarded_row               TEXT,
     error                       VARCHAR(4000),
+    source_type                 VARCHAR(32),
 
     CONSTRAINT pk_invoice_discard
     PRIMARY KEY (loading_id, row_num)
 );
+
+-- Per database già esistenti, aggiungere la colonna (idempotente):
+-- ALTER TABLE public.invoice_discard ADD COLUMN IF NOT EXISTS source_type VARCHAR(32);

@@ -41,6 +41,6 @@ public class ChargesDTO {
     private String date;
     private String currency;
     private String amount;
-    private Long loadingId;
+    private String loadingId;
     private LocalDateTime loadingTime;
 }

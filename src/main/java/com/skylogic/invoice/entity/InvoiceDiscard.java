@@ -41,4 +41,7 @@ public class InvoiceDiscard {
 
     @Column(name = "error", length = 4000)
     private String error;
+
+    @Column(name = "source_type", length = 32)
+    private String sourceType;
 }
