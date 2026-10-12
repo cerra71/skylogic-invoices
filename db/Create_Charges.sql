@@ -46,6 +46,6 @@ CREATE TABLE charges (
     currency VARCHAR(4000),
     amount VARCHAR(4000),
 
-    loading_id SERIAL,
+    loading_id VARCHAR(32),
     loading_time TIMESTAMP
 );
