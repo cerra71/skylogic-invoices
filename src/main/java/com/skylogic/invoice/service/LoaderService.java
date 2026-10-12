@@ -478,6 +478,7 @@ public class LoaderService {
                             .sharedPoolId(getField(currentRow, headerMap, "shared_pool_id"))
                             .usageGb(getField(currentRow, headerMap, "usage_gb"))
                             .date(getField(currentRow, headerMap, "date"))
+                            .rowNum(currentRowNum)
                             .build();
 
                     batch.add(entity);
